@@ -22,3 +22,11 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     buf->buffer[buf->index] = *aux;
     return 1;
 }
+
+void buffer_imprime(Buffer *buf){
+    printf("Conteudo, %d: \n", buf->cap);
+    for(int i=0; i< buf->cap; i++){
+	printf("%c ",buf->buffer[i]);
+    }
+    printf("\n");
+}
