@@ -3,7 +3,7 @@
 typedef struct {
   int cap;
   char* buffer;
-  int index;
+  int index_ins, index_rem;
 } Buffer;
 
 // :3
