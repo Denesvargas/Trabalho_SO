@@ -6,6 +6,8 @@ typedef struct {
   int index_ins, index_rem;
 } Buffer;
 
+char* dataheader(int tam);
+
 // :3
 // Inicializa um buffer com capacidade para ``cap`` bytes.
 // Deve ser possível usar-se quantos buffers se quiser.

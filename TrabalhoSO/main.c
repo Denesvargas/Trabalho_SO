@@ -5,24 +5,28 @@
 
 int main(){
     Buffer* buf = buffer_inicializa(10000);
-    char* teste1 = "abcdef", *teste2 = "bbbbbbbb";
-    buffer_insere(buf, teste1, strlen(teste1));
-    buffer_insere(buf, teste2, strlen(teste2));
+    char *teste = "nnnnnnnnnn", *teste2 = "fedcbaa";
+    void *p1 = (void*) teste;
+    void *p2 = (void*) teste2;
+    int s = buffer_insere(buf, p1, strlen(teste));
+    s = buffer_insere(buf, p2, strlen(teste2));
     buffer_imprime(buf);
-    int tam = 0, i;
+    int tam = 0, i, r;
     void *p = (void*) malloc(6);
-    int r = buffer_remove(buf, p, 6, &tam);
-    printf("%d removidos", tam);
-    char *aux = (char*) p;
-    for(i = 0; i < 7; i++){
-        printf("%c", aux[i]);
+    r = buffer_remove(buf, p, 6, &tam);
+    char *caralho = (char*) p;
+    printf("%d removidos\n", tam);
+    for(i = 0; i < 6; i++){
+        printf("-%c", caralho[i]);
     }
-    printf("\n");
-    int r = buffer_remove(buf, p, 6, &tam);
-    printf("%d removidos", tam);
-    char *aux = (char*) p;
-    for(i = 0; i < 7; i++){
-        printf("%c", aux[i]);
+    printf("-\n");
+    r = buffer_remove(buf, p, 7, &tam);
+    if(r == 1){
+        printf("%d removidos\n", tam);
+        char *aux2 = (char*) p;
+        for(i = 0; i < 6; i++){
+            printf("-%c", aux2[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
 }
