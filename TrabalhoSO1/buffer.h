@@ -1,10 +1,6 @@
 #include <stdbool.h>
 
-typedef struct {
-  int cap;
-  char* buffer;
-  int index_ins, index_rem;
-} Buffer;
+typedef struct buffer Buffer;
 
 char* dataheader(int tam);
 
@@ -37,3 +33,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam);
 bool buffer_remove(Buffer *buf, void *p, int cap, int *tam);
 
 void buffer_imprime(Buffer *buf);
+
+int buffer_ins_verf(Buffer *buf, int tam);
+
+int buffer_rem_verf(Buffer *buf);

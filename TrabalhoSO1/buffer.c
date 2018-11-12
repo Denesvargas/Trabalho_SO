@@ -4,6 +4,12 @@
 #include <math.h>
 #include "buffer.h"
 
+struct buffer{
+  int cap;
+  char* buffer;
+  int index_ins, index_rem;
+};
+
 Buffer* buffer_inicializa(int cap){
     Buffer* buff = (Buffer*) malloc(sizeof(Buffer*));
     buff->buffer = (char*) malloc(cap);
@@ -78,7 +84,7 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     if(buf->index_ins == buf->index_rem)
         return 0;
     char* aux = (char*) p;
-    int i, j, k, m;
+    int i, k;
     if(buf->cap - buf->index_rem < 4)
         buf->index_rem = 0;
     int siz = buf->buffer[buf->index_rem];
@@ -92,4 +98,25 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     buf->index_rem = (i + k) % buf->cap;
     *tam = siz;
     return 1;
+}
+
+int buffer_ins_verf(Buffer *buf, int tam){
+    int livre = 0;
+    if(buf->index_ins == buf->index_rem)
+        livre = buf->cap - 4;
+    else if(buf->index_ins > buf->index_rem)
+        livre = (buf->cap - (buf->index_ins - buf->index_rem)) - 4;
+    else if(buf->index_ins < buf->index_rem)
+        livre = buf->index_rem - buf->index_ins - 4;
+    if(tam > livre)
+        return 0;
+    else
+        return 1;
+}
+
+int buffer_rem_verf(Buffer *buf){
+    if(buf->index_ins == buf->index_rem)
+        return 0;
+    else
+        return 1;
 }
