@@ -15,9 +15,9 @@ void* adiciona_thr(void *p);
 void* remove_thr(void *p);
 
 int main(){
-    Buffer* buf = buffer_inicializa(100000);
+    Buffer* buf = buffer_inicializa(100);
     int i;
-    char *teste[] = {"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bbbbbbbbbbbbbb","cccccccccccccc","ddddddddddddd"};
+    char *teste[] = {"aaaaaaaaaaaaaaaaaaaaaaaaaaa","bbbbbbbbbbbbbb","cccccccccccccc","ddddddddddddd"};
 
     pthread_t t_add[nthread_add], t_rem[nthread_rem];
     Thread_arg_add args_add[nthread_add];
@@ -70,19 +70,19 @@ void* adiciona_thr(void *p){
     Buffer *buf = p_arg->buf;
     Fila_add *fila = p_arg->fila;
     pthread_mutex_t *mutex_temp = p_arg->mutex;
-    pthread_mutex_lock(p_arg->f_mutex);
-    fila_add_ins(fila, p_arg);                       // adiciona na fila de execuçao
-    pthread_mutex_unlock(p_arg->f_mutex);
 
     pthread_mutex_lock(mutex_temp);
-    pthread_mutex_lock(p_arg->f_mutex);
-    while(buffer_ins_verf(buf, fila_siz_next(fila))){
-        pthread_mutex_unlock(p_arg->f_mutex);
+    while(buffer_ins_verf(buf, fila_siz_next(fila), fila, strlen(p_arg->aux))){
+        fila_add_ins(fila, p_arg);
         pthread_cond_wait(p_arg->cond, mutex_temp);
-        pthread_mutex_lock(p_arg->f_mutex);
     }
-    pthread_mutex_unlock(p_arg->f_mutex);
-    Thread_arg_add *args_add = fila_add_del(fila);
+    Thread_arg_add *args_add;
+    if(fila_add_vazia(fila)){
+        args_add = p_arg;
+    }
+    else{
+        args_add = fila_add_del(fila);
+    }
     char *aux = args_add->aux;
     void *p_aux = (void*) aux;
     int tam = strlen(aux);
@@ -93,25 +93,33 @@ void* adiciona_thr(void *p){
     }
     else
         printf("nao adicionou\n");
-    pthread_cond_signal(p_arg->cond2);
     pthread_mutex_unlock(mutex_temp);
+    pthread_cond_signal(p_arg->cond2);
     return 0;
 }
+
+
+
 
 void* remove_thr(void *p){
     Thread_arg_rem *p_arg = (Thread_arg_rem*) p;
     Buffer *buf = p_arg->buf;
     pthread_mutex_t *mutex_temp = p_arg->mutex;
     Fila_rem *fila = p_arg->fila;
-    pthread_mutex_lock(p_arg->f_mutex);
-    fila_rem_ins(p_arg->fila, p_arg);                       // adiciona na fila de remocao
-    pthread_mutex_unlock(p_arg->f_mutex);
 
     pthread_mutex_lock(mutex_temp);
     while(buffer_rem_verf(buf)){
+        fila_rem_ins(fila, p_arg);
         pthread_cond_wait(p_arg->cond2, mutex_temp);
     }
-    Thread_arg_rem *args_rem = fila_rem_del(fila);
+    Thread_arg_rem *args_rem;
+    if(fila_rem_vazia(fila)){
+        args_rem = p_arg;
+    }
+    else{
+        fila_rem_ins(p_arg->fila, p_arg);
+        args_rem = fila_rem_del(fila);
+    }
     int siz_rem = p_arg->tam;
     int tam = 0, r = 0, i;
     void *p_aux = (void*) malloc(siz_rem);

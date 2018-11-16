@@ -94,3 +94,26 @@ int fila_siz_next(Fila_add *fila){
     return -1;
 }
 
+int fila_add_vazia(Fila_add *fila){
+    if(fila->ini == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+int fila_rem_vazia(Fila_rem *fila){
+    if(fila->ini == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+int buffer_ins_verf(Buffer *buf, int tam, Fila_add *fila, int tam2){
+    int livre = buffer_tam_livre(buf);
+    if(fila_add_vazia(fila))
+        tam = tam2;
+    if(tam > livre)
+        return 1;             // nao cabe no buffer
+    else
+        return 0;
+}

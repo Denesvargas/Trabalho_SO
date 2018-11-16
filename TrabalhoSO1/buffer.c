@@ -25,15 +25,6 @@ void buffer_finaliza(Buffer *buf){
     return;
 }
 
-char* dataheader(int tam){
-    int i;
-    char* strtam = malloc(sizeof(char) * sizeof(int) * 4 + 1);
-    itoa(tam, strtam, 2);
-    char* saida = malloc(sizeof(char) * sizeof(int) * 8 + 1);
-    sprintf(saida, "%032s", strtam);
-    return saida;
-}
-
 bool buffer_insere(Buffer *buf, void *p, int tam){
     if(tam <= 0)
         return 0;
@@ -52,7 +43,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
 
     // Cria um vetor void do tamanho do header;
     void* pv = malloc (4);
-    // Transforma ele em um vetor de int com 1 posiÃ§Ã£o;
+    // Transforma ele em um vetor de int com 1 posição;
     int* pi = (int*)pv;
     // Coloca o tamanho dentro desse vetor void(int);
     *pi = tam;
@@ -62,9 +53,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     for(int z=0; z<4;z++){
         data[z] = pp[z];
     }
-    // STRCAT nÃ£o Ã© o melhor metodo, da pra usar um for i 0:4 passando um por vez
-
-    printf(" --- %d %d %d %d --- %d ---\n",data[0],data[1],data[2],data[3], *pi);
+    // STRCAT não é o melhor metodo, da pra usar um for i 0:4 passando um por vez
 
     for(k = 4, i = 0; i < tam; k++, i++){
         data[k] = aux[i];
@@ -132,7 +121,7 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     void* pv = malloc(4);
     char* pc = (char*)pv;
     int* pi = (int*)pv;
-    // passa os intens do header pro vetor void
+    // passa os itens do header pro vetor void
     for (int n=0; n<4;n++)
         pc[n] = buf->buffer[buf->index_rem + n];
     // passa o unico inteiro do vetor void para a variavel tamanho2
@@ -150,7 +139,7 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     return 1;
 }
 
-int buffer_ins_verf(Buffer *buf, int tam){
+int buffer_tam_livre(Buffer *buf){
     int livre = 0;
     if(buf->index_ins == buf->index_rem)
         livre = buf->cap - 4;
@@ -158,10 +147,7 @@ int buffer_ins_verf(Buffer *buf, int tam){
         livre = (buf->cap - (buf->index_ins - buf->index_rem)) - 4;
     else if(buf->index_ins < buf->index_rem)
         livre = buf->index_rem - buf->index_ins - 4;
-    if(tam > livre)
-        return 1;             // nao cabe no buffer
-    else
-        return 0;
+    return livre;
 }
 
 int buffer_rem_verf(Buffer *buf){

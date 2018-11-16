@@ -40,3 +40,5 @@ Thread_arg_rem* fila_rem_del(Fila_rem *fila);
 int fila_siz_next(Fila_add *fila);
 
 Thread_arg_add temp;
+
+int buffer_ins_verf(Buffer *buf, int tam, Fila_add *fila, int tam2);

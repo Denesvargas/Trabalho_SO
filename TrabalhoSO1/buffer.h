@@ -34,6 +34,4 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam);
 
 void buffer_imprime(Buffer *buf);
 
-int buffer_ins_verf(Buffer *buf, int tam);
-
 int buffer_rem_verf(Buffer *buf);
