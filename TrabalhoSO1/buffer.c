@@ -46,9 +46,26 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
             return 0;
     }
     char* aux = (char*) p;
-    char* data = (char*) malloc(4 + tam);
+    unsigned char* data = (char*) malloc(4 + tam);
     int k, j , i;
-    data[0] = tam;
+
+
+    // Cria um vetor void do tamanho do header;
+    void* pv = malloc (4);
+    // Transforma ele em um vetor de int com 1 posição;
+    int* pi = (int*)pv;
+    // Coloca o tamanho dentro desse vetor void(int);
+    *pi = tam;
+    // Transforma o vetor void para char;
+    char* pp = (char*)pv;
+    // Poe o valor que ta dividido em chars no buffer;
+    for(int z=0; z<4;z++){
+        data[z] = pp[z];
+    }
+    // STRCAT não é o melhor metodo, da pra usar um for i 0:4 passando um por vez
+
+    printf(" --- %d %d %d %d --- %d ---\n",data[0],data[1],data[2],data[3], *pi);
+
     for(k = 4, i = 0; i < tam; k++, i++){
         data[k] = aux[i];
     }
@@ -66,14 +83,27 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
 
 void buffer_imprime(Buffer *buf){
     int j, i = buf->index_rem, header;
+
+    void* pv = malloc(4);
+    char* pc = (char*)pv;
+    int* pi = (int*)pv;
+
     if(buf->index_ins == buf->index_rem)
         printf("Buffer vazio\n");
     else{
         while (i != buf->index_ins) {
-            if(buf->cap - buf->index_rem < 4)
-                header = buf->buffer[0];
-            else
-                header = buf->buffer[i];
+            if(buf->cap - buf->index_rem < 4){
+                for (int n=0; n<4;n++)
+                    pc[n] = buf->buffer[n];
+                header = pi[0];
+            }
+            else{
+                for (int n=0; n<4;n++)
+                    pc[n] = buf->buffer[i + n];
+                header = pi[0];
+            }
+
+
             printf("%d  -> ", header);
             i += 4;                                    // arrumar header
             for (j = 0; j < header; j++)
@@ -96,7 +126,18 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     if(buf->cap - buf->index_rem < 4)
         buf->index_rem = 0;
     printf("%d index rem\n", buf->index_rem);
-    int siz = buf->buffer[buf->index_rem];
+
+
+    //int siz = buf->buffer[buf->index_rem];
+    void* pv = malloc(4);
+    char* pc = (char*)pv;
+    int* pi = (int*)pv;
+    // passa os intens do header pro vetor void
+    for (int n=0; n<4;n++)
+        pc[n] = buf->buffer[buf->index_rem + n];
+    // passa o unico inteiro do vetor void para a variavel tamanho2
+    int siz = pi[0];
+
     buf->index_rem += 4;
     for(i = 0, k = buf->index_rem; i < siz; i++){
         if(i < cap){
