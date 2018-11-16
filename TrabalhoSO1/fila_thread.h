@@ -13,15 +13,16 @@ typedef struct {
     pthread_mutex_t *mutex, *f_mutex;
     Fila_add *fila;
     char *aux;
-    sem_t *sem_empt, *sem_full;
+    pthread_cond_t *cond, *cond2;
+    int num;
 }Thread_arg_add;
 
 typedef struct {
     Buffer *buf;
     pthread_mutex_t *mutex, *f_mutex;
     Fila_rem *fila;
-    int tam;
-    sem_t *sem_empt, *sem_full;
+    int tam, num;
+    pthread_cond_t *cond, *cond2;
 }Thread_arg_rem;
 
 Fila_add* fila_add_cria();

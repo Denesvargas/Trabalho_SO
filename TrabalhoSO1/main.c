@@ -5,34 +5,36 @@
 #include <semaphore.h>
 #include "fila_thread.h"
 
-#define nthread_add 300
-#define nthread_rem 300
+#define nthread_add 10
+#define nthread_rem 10
 
 pthread_mutex_t count_mutex, fila_add_mutex, fila_rem_mutex;
-sem_t semaf_empt, semaf_full;
+pthread_cond_t cond, cond2;
 
 void* adiciona_thr(void *p);
 void* remove_thr(void *p);
 
 int main(){
-    Buffer* buf = buffer_inicializa(100);
+    Buffer* buf = buffer_inicializa(100000);
     int i;
-    char *teste[] = {"aaaaaaaaaaa","bbbbbbbbbbbbbb","cccccccccccccc","ddddddddddddd"};
-    sem_init(&semaf_full, 0 , 0);
-    sem_init(&semaf_empt, 0 , 4);
+    char *teste[] = {"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bbbbbbbbbbbbbb","cccccccccccccc","ddddddddddddd"};
+
     pthread_t t_add[nthread_add], t_rem[nthread_rem];
     Thread_arg_add args_add[nthread_add];
     Thread_arg_rem args_rem[nthread_rem];
     Fila_add *fila_a = fila_add_cria();
     Fila_rem *fila_r = fila_rem_cria();
+    pthread_cond_init(&cond, NULL);
+    pthread_cond_init(&cond2, NULL);
     for(i = 0; i < nthread_add; i++){
         args_add[i].aux = teste[i % 4];
         args_add[i].buf = buf;
         args_add[i].mutex = &count_mutex;
         args_add[i].f_mutex = &fila_add_mutex;
         args_add[i].fila = fila_a;
-        args_add[i].sem_empt = &semaf_empt;
-        args_add[i].sem_full = &semaf_full;
+        args_add[i].cond = &cond;
+        args_add[i].cond2 = &cond2;
+        args_add[i].num = i;
     }
     for(i = 0; i < nthread_rem; i++){
         args_rem[i].tam = 10;
@@ -40,10 +42,14 @@ int main(){
         args_rem[i].mutex = &count_mutex;
         args_rem[i].f_mutex = &fila_rem_mutex;
         args_rem[i].fila = fila_r;
-        args_rem[i].sem_empt = &semaf_empt;
-        args_rem[i].sem_full = &semaf_full;
+        args_rem[i].cond = &cond;
+        args_rem[i].cond2 = &cond2;
+        args_rem[i].num = i;
     }
     pthread_mutex_init(&count_mutex, NULL);
+    pthread_mutex_init(&fila_add_mutex, NULL);
+    pthread_mutex_init(&fila_rem_mutex, NULL);
+    printf("inicio\n");
     for(i = 0; i < nthread_add; i++){
         pthread_create(&(t_add[i]), NULL, adiciona_thr, &(args_add[i]));
     }
@@ -55,7 +61,8 @@ int main(){
          r = pthread_join(t_rem[i], NULL);
     }
     printf("FIM\n");
-    buffer_imprime(buf);
+    //buffer_imprime(buf);
+    buffer_printa(buf);
 }
 
 void* adiciona_thr(void *p){
@@ -67,27 +74,26 @@ void* adiciona_thr(void *p){
     fila_add_ins(fila, p_arg);                       // adiciona na fila de execuçao
     pthread_mutex_unlock(p_arg->f_mutex);
 
-    sem_wait(p_arg->sem_empt);
     pthread_mutex_lock(mutex_temp);
+    pthread_mutex_lock(p_arg->f_mutex);
+    while(buffer_ins_verf(buf, fila_siz_next(fila))){
+        pthread_mutex_unlock(p_arg->f_mutex);
+        pthread_cond_wait(p_arg->cond, mutex_temp);
+        pthread_mutex_lock(p_arg->f_mutex);
+    }
+    pthread_mutex_unlock(p_arg->f_mutex);
     Thread_arg_add *args_add = fila_add_del(fila);
     char *aux = args_add->aux;
     void *p_aux = (void*) aux;
     int tam = strlen(aux);
-    buffer_insere(buf, p_aux, tam);
-    sem_post(p_arg->sem_full);
-    /*do{
-        resp = buffer_ins_verf(buf, size_next);
-        if(resp){
-
-        }
-        else{
-            //unlock rem -- desbloqueia todos os que removem do buffer
-            //desbloqueia o acesso geral ao buffer
-            //lock add  -- bloqueia todos os que adicionam no buffer, inclusive essa thread com thread condition
-            //lock buff -- bloqueia o acesso geral ao buffer
-        }
-    }while(resp == 0);*/
-                                            // implementar bloqueio caso cheio
+    int r = buffer_insere(buf, p_aux, tam);
+    if(r){
+        printf("adicionou no buffer -> %d de tam %d\n", p_arg->num, tam);
+        buffer_printa(buf);
+    }
+    else
+        printf("nao adicionou\n");
+    pthread_cond_signal(p_arg->cond2);
     pthread_mutex_unlock(mutex_temp);
     return 0;
 }
@@ -101,8 +107,10 @@ void* remove_thr(void *p){
     fila_rem_ins(p_arg->fila, p_arg);                       // adiciona na fila de remocao
     pthread_mutex_unlock(p_arg->f_mutex);
 
-    sem_wait(p_arg->sem_full);
-    pthread_mutex_lock(mutex_temp);                         // implementar bloqueio caso vazio
+    pthread_mutex_lock(mutex_temp);
+    while(buffer_rem_verf(buf)){
+        pthread_cond_wait(p_arg->cond2, mutex_temp);
+    }
     Thread_arg_rem *args_rem = fila_rem_del(fila);
     int siz_rem = p_arg->tam;
     int tam = 0, r = 0, i;
@@ -110,17 +118,17 @@ void* remove_thr(void *p){
     r = buffer_remove(buf, p_aux, siz_rem, &tam);
     if(r){
         char *caralho = (char*) p_aux;
-        printf("%d removidos\n", tam);
+        printf("%d removidos > ", tam);
         if(siz_rem > tam)
             siz_rem = tam;
         for(i = 0; i < siz_rem; i++){
             printf("-%c", caralho[i]);
         }
-        printf(" -> %d foram pedidos\n", i);
+        printf("\n -> %d foram pedidos\n", i);
     }
     else
         printf("Nao removeu");
-    sem_post(p_arg->sem_empt);
     pthread_mutex_unlock(mutex_temp);
+    pthread_cond_signal(p_arg->cond);
     return 0;
 }

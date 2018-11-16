@@ -14,8 +14,8 @@ Buffer* buffer_inicializa(int cap){
     Buffer* buff = (Buffer*) malloc(sizeof(Buffer*));
     buff->buffer = (char*) malloc(cap);
     buff->cap = cap;
-    buff->index_ins = 96;
-    buff->index_rem = 96;
+    buff->index_ins = 0;
+    buff->index_rem = 0;
     return buff;
 }
 
@@ -23,6 +23,15 @@ void buffer_finaliza(Buffer *buf){
     free(buf->buffer);
     free(buf);
     return;
+}
+
+char* dataheader(int tam){
+    int i;
+    char* strtam = malloc(sizeof(char) * sizeof(int) * 4 + 1);
+    itoa(tam, strtam, 2);
+    char* saida = malloc(sizeof(char) * sizeof(int) * 8 + 1);
+    sprintf(saida, "%032s", strtam);
+    return saida;
 }
 
 bool buffer_insere(Buffer *buf, void *p, int tam){
@@ -40,7 +49,6 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     char* data = (char*) malloc(4 + tam);
     int k, j , i;
     data[0] = tam;
-
     for(k = 4, i = 0; i < tam; k++, i++){
         data[k] = aux[i];
     }
@@ -51,7 +59,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
         buf->buffer[i % buf->cap] = data[j];
         k = i;
     }
-    k = k  % buf->cap;
+    k = k % buf->cap;
     buf->index_ins = k;
     return 1;
 }
@@ -67,7 +75,7 @@ void buffer_imprime(Buffer *buf){
             else
                 header = buf->buffer[i];
             printf("%d  -> ", header);
-            i += 4;
+            i += 4;                                    // arrumar header
             for (j = 0; j < header; j++)
                 printf("%c", buf->buffer[(i+j) % buf->cap]);
             printf("\n");
@@ -87,6 +95,7 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     int i, k;
     if(buf->cap - buf->index_rem < 4)
         buf->index_rem = 0;
+    printf("%d index rem\n", buf->index_rem);
     int siz = buf->buffer[buf->index_rem];
     buf->index_rem += 4;
     for(i = 0, k = buf->index_rem; i < siz; i++){
@@ -109,14 +118,18 @@ int buffer_ins_verf(Buffer *buf, int tam){
     else if(buf->index_ins < buf->index_rem)
         livre = buf->index_rem - buf->index_ins - 4;
     if(tam > livre)
-        return 0;
+        return 1;             // nao cabe no buffer
     else
-        return 1;
+        return 0;
 }
 
 int buffer_rem_verf(Buffer *buf){
     if(buf->index_ins == buf->index_rem)
-        return 0;
+        return 1;             // ta vazio
     else
-        return 1;
+        return 0;
+}
+
+void buffer_printa(Buffer *buf){
+    printf("%d %d.\n", buf->index_ins, buf->index_rem);
 }
