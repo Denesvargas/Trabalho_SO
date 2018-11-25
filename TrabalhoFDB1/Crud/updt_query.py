@@ -3,6 +3,16 @@ def choose_edit_opt(opt, mydb):
         edit_almx(mydb)
     elif(opt == 2):
         edit_prod(mydb)
+    elif(opt == 3):
+        edit_linha(mydb)
+    elif (opt == 4):
+        edit_nota_compra(mydb)
+    elif(opt == 5):
+        edit_fornc(mydb)
+    elif(opt == 6):
+        edit_nota_venda(mydb)
+    elif(opt == 7):
+        edit_cliente(mydb)
 
 
 def edit_almx(mydb):
@@ -53,4 +63,97 @@ def edit_prod(mydb):
     else:
         print("O produto nao foi encontrado, tente novamente.")
 
-#def edit_linha(mydb):
+def edit_linha(mydb):
+    print("Digite o id da linha a ser alterada:")
+    id_linha = input()
+    select = mydb.query_select("linha", ["Id_linha", "Descr"], [("Id_linha", "=", id_linha, "")])
+    if(len(select) > 0 ):
+        print("Digite a nova descrição da linha ou deixe vazio para nao alterar.")
+        descr = input()
+        if(descr != ""):
+            mydb.query_update("linha", ["Descr"], [descr], [("Id_linha", "=", id_linha, "")])
+    else:
+        print("A linha de produto não foi encontrada, tente novamente.")
+
+def edit_nota_compra(mydb):
+    print("Digite o id da compra a ser editada:")
+    id_compra = input()
+    select = mydb.query_select("nota_compra", ["Num_nota","Data_compra", "fk_Fornecedor_Id_fornc"], [("Num_nota", "=", id_compra, "")], None, True)
+    if(len(select) > 0):
+        print("Digite a nova data da compra(yyyy/mm/dd) ou deixe vazio para nao alterar.")
+        date = input()
+        if(date == ""):
+            date = select[0]['Data_compra']
+        print("Digite o novo id do Forncedor desta compra, deixe como 'NULL' ou deixe vazio para nao alterar.")
+        fornc_id = input()
+        if(fornc_id == ""):
+            fornc_id = select[0]['fk_Fornecedor_Id_fornc']
+        if (fornc_id != "NULL"):
+            select = mydb.query_select("fornecedor", ["Id_fornc"], [("Id_fornc", "=", fornc_id, "")], None, True)
+            if (len(select) > 0):
+                fornc_id = int(fornc_id)
+                mydb.query_update("nota_compra", ["Data_compra", "fk_Fornecedor_Id_fornc"], [date, fornc_id], [("Num_nota", "=", id_compra, "")] )
+            else:
+                print("Fornecedor nao encontrado, cadastre o fornecedor desejado antes.")
+        else:
+            mydb.query_insert("nota_compra", ["Data_compra"], [date])  # change for except
+    else:
+        print("A nota de compra nao foi encontrada, tente novamente")
+
+def edit_fornc(mydb):
+    print("Digite o id do fornecedor a ser editado:")
+    id_fornc = input()
+    select = mydb.query_select("fornecedor", ["Id_fornc", "CNPJ", "CEP"], [("Id_fornc", "=", id_fornc, "")], None, True)
+    if(len(select) > 0 ):
+        print("Digite o novo CNPJ do Fornecedor ou deixe vazio para nao alterar")
+        cnpj = input()
+        if(cnpj == ""):
+            cnpj = select[0]['CNPJ']
+        print("Digite o novo CEP do Fornecedor ou deixe vazio para nao alterar")
+        cep = input()
+        if(cep == ""):
+            cep = select[0]['CEP']
+        mydb.query_update("fornecedor", ["CNPJ", "CEP"], [cnpj, cep], [("Id_fornc", "=", id_fornc, "")])
+    else:
+        print("Fornecedor nao encontrado, tente novamente.")
+
+def edit_nota_venda(mydb):
+    print("Digite o id da nota de venda a ser editada:")
+    id_venda = input()
+    select = mydb.query_select("nota_venda", ["Num_nota", "Data_venda", "fk_Cliente_CPF"], [("Num_nota", "=", id_venda, "")], None, True)
+    if (len(select) > 0):
+        print("Digite a data da venda(yyyy/mm/dd) ou deixe vazio para nao alterar")
+        date = input()
+        if (date == ""):
+            date = select[0]['Data_venda']
+        print("Digite o CPF do cliente desta compra, deixe como 'NULL' ou deixe vazio para nao alterar")
+        cliente_cpf = input()
+        if (cliente_cpf == ""):
+            cliente_cpf = select[0]['fk_Cliente_CPF']
+        if (cliente_cpf != "NULL"):
+            select = mydb.query_select("cliente", ["CPF"], [("CPF", "=", cliente_cpf, "")], None, True)
+            if (len(select) > 0):
+                mydb.query_update("nota_venda", ["Data_venda", "fk_Cliente_CPF"], [date, cliente_cpf],  [("Num_nota", "=", id_venda, "")])
+            else:
+                print("Cliente nao encontrado, cadastre o cliente desejado antes.")
+        else:
+            mydb.query_update("nota_venda", ["Data_venda"], [date], [("Num_nota", "=", id_venda, "")])  # change for except
+    else:
+        print("Nota de venda nao encontrada, tente novamente")
+
+def edit_cliente(mydb):
+    print("Digite o CPF do cliente a ser alterado")
+    cpf = input()
+    select = mydb.query_select("cliente", ["CPF", "Nome", "Telef"], [("CPF", "=", cpf, "")], None, True)
+    if(len(select) > 0 ):
+        print("Digite o nome do cliente ou deixe vazio para nao alterar")
+        name = input()
+        if(name == ""):
+            name = select[0]['Nome']
+        print("Digite o telefone do cliente ou deixe vazio para nao alterar")
+        tel = input()
+        if(tel == ""):
+            tel = select[0]['Telef']
+        mydb.query_update("cliente", ["Nome", "Telef"], [name, tel], [("CPF", "=", cpf, "")])
+    else:
+        print("Cliente nao encontrado, tente novamente")
