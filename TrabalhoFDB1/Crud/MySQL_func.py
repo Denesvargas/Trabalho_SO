@@ -1,4 +1,4 @@
-import MySQLdb as mdb
+import MySQLdb as Mdb
 from sql_manager import SQLManager
 
 
@@ -22,7 +22,7 @@ class MySQLManager(SQLManager):
     def connect_to_database(self):
         # conecta com o banco de dados
         try:
-            self.connection = mdb.connect(self.host, self.login, self.password, self.database)
+            self.connection = Mdb.connect(self.host, self.login, self.password, self.database)
         except:
             raise Exception("Unable to Connect to the Database")
         else:

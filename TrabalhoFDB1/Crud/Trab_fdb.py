@@ -1,6 +1,8 @@
 from MySQL_func import MySQLManager
-import add_query as add_db
-import updt_query as updt_db
+import add_query as Add_db
+import updt_query as Updt_db
+import drop_query as Rem_db
+import selec_query as Selec_db
 
 def choose(opt, name_opt, mydb):
     opt_add = -1
@@ -16,13 +18,13 @@ def choose(opt, name_opt, mydb):
         print("0-Voltar ao menu anterior.")
         opt_add = int(input());
         if(opt == 1):
-            add_db.choose_add_opt(opt_add, mydb)
+            Add_db.choose_add_opt(opt_add, mydb)
         elif(opt == 2):
-            updt_db.choose_edit_opt(opt_add, mydb)
+            Updt_db.choose_edit_opt(opt_add, mydb)
         elif(opt == 3):
-            choose_rem_opt()
+            Rem_db.choose_rem_opt(opt_add, mydb)
         elif(opt == 4):
-            choose_selec_opt()
+            Selec_db.choose_selec_opt(opt_add, mydb)
 
 
 def main():
@@ -57,37 +59,4 @@ main()
 
 
 
-'''
 
-def choose_rem_opt(opt):
-    if (opt == 1):
-        # add_alm
-    elif (opt == 2):
-        # add_produto
-    elif (opt == 3):
-        # add_linha
-    elif (opt == 4):
-        # add_nota_comp
-    elif (opt == 5):
-        # add_fornc
-    elif (opt == 6):
-        # add_nota_vend
-    elif (opt == 7):
-        # add_cliente
-
-def choose_selec_opt(opt):
-    if (opt == 1):
-        # add_alm
-    elif (opt == 2):
-        # add_produto
-    elif (opt == 3):
-        # add_linha
-    elif (opt == 4):
-        # add_nota_comp
-    elif (opt == 5):
-        # add_fornc
-    elif (opt == 6):
-        # add_nota_vend
-    elif (opt == 7):
-        # add_cliente
-'''

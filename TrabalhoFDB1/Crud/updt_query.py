@@ -31,7 +31,6 @@ def edit_prod(mydb):
     print("Digite o id do produto a ser editado: ")
     id_prod = input()
     select = mydb.query_select("produto", ["Id_prod", "Nome", "Descr", "Preco", "fk_Linha_Id_linha"], [("Id_prod", "=", id_prod, "")], None, True)
-    print(select[0]['Nome'])
     if(len(select) > 0):
         print("Digite o novo nome do produto ou deixe vazio para nao alterar:")
         name = input()
@@ -78,7 +77,7 @@ def edit_linha(mydb):
 def edit_nota_compra(mydb):
     print("Digite o id da compra a ser editada:")
     id_compra = input()
-    select = mydb.query_select("nota_compra", ["Num_nota","Data_compra", "fk_Fornecedor_Id_fornc"], [("Num_nota", "=", id_compra, "")], None, True)
+    select = mydb.query_select("nota_compra", ["Num_nota", "Data_compra", "fk_Fornecedor_Id_fornc"], [("Num_nota", "=", id_compra, "")], None, True)
     if(len(select) > 0):
         print("Digite a nova data da compra(yyyy/mm/dd) ou deixe vazio para nao alterar.")
         date = input()
