@@ -66,8 +66,8 @@ CREATE TABLE Saida (
 ALTER TABLE Produto ADD CONSTRAINT FK_Produto_2
     FOREIGN KEY (fk_Linha_Id_linha)
     REFERENCES Linha (Id_linha)
-    ON DELETE CASCADE;
- 
+    ON DELETE SET NULL;
+
 ALTER TABLE Estocado ADD CONSTRAINT FK_Estocado_2
     FOREIGN KEY (fk_Almoxarifado_Id_almx)
     REFERENCES Almoxarifado (Id_almx)
@@ -76,12 +76,12 @@ ALTER TABLE Estocado ADD CONSTRAINT FK_Estocado_2
 ALTER TABLE Estocado ADD CONSTRAINT FK_Estocado_3
     FOREIGN KEY (fk_Produto_Id_prod)
     REFERENCES Produto (Id_prod)
-    ON DELETE CASCADE;
+    ON DELETE RESTRICT;
  
 ALTER TABLE Entrada ADD CONSTRAINT FK_Entrada_1
     FOREIGN KEY (fk_Nota_compra_Num_nota)
     REFERENCES Nota_compra (Num_nota)
-    ON DELETE RESTRICT;
+    ON DELETE CASCADE;
  
 ALTER TABLE Entrada ADD CONSTRAINT FK_Entrada_2
     FOREIGN KEY (fk_Estocado_Id_estoque)
@@ -91,12 +91,12 @@ ALTER TABLE Entrada ADD CONSTRAINT FK_Entrada_2
 ALTER TABLE Nota_compra ADD CONSTRAINT FK_Nota_compra_2
     FOREIGN KEY (fk_Fornecedor_Id_fornc)
     REFERENCES Fornecedor (Id_fornc)
-    ON DELETE CASCADE;
+    ON DELETE SET NULL;
  
 ALTER TABLE Nota_venda ADD CONSTRAINT FK_Nota_venda_2
     FOREIGN KEY (fk_Cliente_CPF)
     REFERENCES Cliente (CPF)
-    ON DELETE CASCADE;
+    ON DELETE SET NULL;
  
 ALTER TABLE Saida ADD CONSTRAINT FK_Saida_1
     FOREIGN KEY (fk_Estocado_Id_estoque)
@@ -106,4 +106,4 @@ ALTER TABLE Saida ADD CONSTRAINT FK_Saida_1
 ALTER TABLE Saida ADD CONSTRAINT FK_Saida_2
     FOREIGN KEY (fk_Nota_venda_Num_nota)
     REFERENCES Nota_venda (Num_nota)
-    ON DELETE RESTRICT;
+    ON DELETE CASCADE;
