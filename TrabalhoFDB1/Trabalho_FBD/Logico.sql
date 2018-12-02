@@ -1,4 +1,5 @@
 /* Lógico_1: */
+CREATE SCHEMA `estoque`;
 
 CREATE TABLE Produto (
     Id_prod INTEGER PRIMARY KEY auto_increment not null,
