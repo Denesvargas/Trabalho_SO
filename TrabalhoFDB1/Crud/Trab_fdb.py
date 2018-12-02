@@ -15,6 +15,9 @@ def choose(opt, name_opt, mydb):
         print("5-Fornecedor.")
         print("6-Nota de venda.")
         print("7-cliente.")
+        print("8-Estoque.")
+        print("9-Entrada de produtos.")
+        print("10-Saida de produtos.")
         print("0-Voltar ao menu anterior.")
         opt_add = int(input());
         if(opt == 1):

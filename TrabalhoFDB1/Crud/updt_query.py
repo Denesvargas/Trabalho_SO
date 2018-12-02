@@ -156,3 +156,34 @@ def edit_cliente(mydb):
         mydb.query_update("cliente", ["Nome", "Telef"], [name, tel], [("CPF", "=", cpf, "")])
     else:
         print("Cliente nao encontrado, tente novamente")
+
+def edit_estoq(mydb):
+    print("Digite o id do estoque a ser editado")
+    id_estoq = input()
+    select = mydb.query_select("estocado", ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
+                               [("Id_estoque", "=", id_estoq, "")])
+    if (len(select) > 0):
+        print("Digite o novo id do produto, deixe como 'NULL' ou vazio para nao alterar")
+        id_prod = input()
+        if(id_prod == ""):
+            id_prod = select[0]['fk_Produto_Id_prod']
+        selectprod = mydb.query_select("produto", ["Id_prod", "Nome", "Descr", "Preco", "fk_Linha_Id_linha"], [("Id_prod", "=", id_prod, "")], None, True)
+        if(len(selectprod) > 0):
+            print("Digite o novo id do almoxarifado, deixe como 'NULL' ou vazio para nao alterar")
+            id_almx = input()
+            if(id_almx == ""):
+                id_almx = select[0]['fk_Almoxarifado_Id_almx']
+            selectalmx = mydb.query_select("almoxarifado", ["Id_almx"], [("Id_almx", "=", id_almx, "")])
+            if (len(selectalmx) > 0):
+                print("Digite a nova quantidade desse produto, ou deixe vazio para nao alterar")
+                qtde = input()
+                if (qtde == ""):
+                   qtde = select[0]['Qtde']
+                mydb.query_update("estocado", ["Qtde", "fk_Almoaxarifado_Id_almx", "fk_Produto_Id_prod"],
+                                  [qtde, id_almx, id_prod], [("Id_estoque", "=", id_estoq, "")])
+            else:
+                print("Almoxarifado nao encontrado, tente novamente")
+        else:
+            print("Produto nao encontrado, tente novamente")
+    else:
+        print("Estoque nao encontrado, tente novamente")
