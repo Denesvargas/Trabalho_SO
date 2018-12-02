@@ -103,3 +103,6 @@ class MySQLManager(SQLManager):
             raise Exception("Fail to Execute Database Query")
         else:
             return self.cursor.fetchall()
+
+
+

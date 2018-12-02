@@ -14,50 +14,52 @@ def choose_edit_opt(opt, mydb):
     elif opt == 7:
         edit_cliente(mydb)
     elif opt == 8:
-        edit_entr(mydb)
+        edit_estoq(mydb)
     elif opt == 9:
         edit_entr(mydb)
     elif opt == 10:
         edit_saida(mydb)
 
+
 def edit_almx(mydb):
     print("Digite o id do almoxarifado a ser editado: ")
     id_almx = int(input())
     select = mydb.query_select("almoxarifado", ["Id_almx"], [("Id_almx", "=", id_almx, "")])
-    if(len(select) > 0):
+    if len(select) > 0:
         print("Digite a nova descricao a ser inserida no almoxarifado ou deixe vazio para cancelar: ")
         descr = input()
-        if(descr != ""):
+        if descr != "":
             mydb.query_update("almoxarifado", ["Descr"], [descr], [("Id_almx", "=", id_almx, "")])
     else:
         print("Nao foi encontrado o almoxerifado pesquisado, tente novamente.")
+
 
 def edit_prod(mydb):
     print("Digite o id do produto a ser editado: ")
     id_prod = input()
     select = mydb.query_select("produto", ["Id_prod", "Nome", "Descr", "Preco", "fk_Linha_Id_linha"], [("Id_prod", "=", id_prod, "")], None, True)
-    if(len(select) > 0):
+    if len(select) > 0:
         print("Digite o novo nome do produto ou deixe vazio para nao alterar:")
         name = input()
-        if(name == ""):
+        if name == "":
             name = select[0]['Nome']
         print("Digite o novo preco ou deixe vazio para nao alterar:")
         price = input()
-        if(price == ""):
+        if price == "":
             price = select[0]['Preco']
         else:
             price = float(price)
         print("Digite a nova descricao do produto ou deixe vazio para nao alterar:")
         descr = input()
-        if(descr == ""):
+        if descr == "":
             descr = select[0]['Descr']
         print("Digite o novo id da linha do produto, coloque 'NULL' ou deixe vazio para nao alterar.")
         linha_id = input()
-        if(linha_id == ""):
+        if linha_id == "":
             linha_id = select[0]['fk_Linha_Id_linha']
-        if (linha_id != "NULL"):
+        if linha_id != "NULL":
             select = mydb.query_select("linha", ["Id_linha"], [("Id_linha", "=", linha_id, "")], None, True)
-            if (len(select) > 0):
+            if len(select) > 0:
                 linha_id = int(linha_id)
                 mydb.query_update("produto", ["Nome", "Descr", "Preco", "fk_Linha_Id_linha"], [name, descr, price, linha_id], [("Id_prod", "=", id_prod, "")])
             else:
@@ -67,34 +69,36 @@ def edit_prod(mydb):
     else:
         print("O produto nao foi encontrado, tente novamente.")
 
+
 def edit_linha(mydb):
     print("Digite o id da linha a ser alterada:")
     id_linha = input()
     select = mydb.query_select("linha", ["Id_linha", "Descr"], [("Id_linha", "=", id_linha, "")])
-    if(len(select) > 0 ):
+    if len(select) > 0:
         print("Digite a nova descrição da linha ou deixe vazio para nao alterar.")
         descr = input()
-        if(descr != ""):
+        if descr != "":
             mydb.query_update("linha", ["Descr"], [descr], [("Id_linha", "=", id_linha, "")])
     else:
         print("A linha de produto não foi encontrada, tente novamente.")
+
 
 def edit_nota_compra(mydb):
     print("Digite o id da compra a ser editada:")
     id_compra = input()
     select = mydb.query_select("nota_compra", ["Num_nota", "Data_compra", "fk_Fornecedor_Id_fornc"], [("Num_nota", "=", id_compra, "")], None, True)
-    if(len(select) > 0):
+    if len(select) > 0:
         print("Digite a nova data da compra(yyyy/mm/dd) ou deixe vazio para nao alterar.")
         date = input()
-        if(date == ""):
+        if date == "":
             date = select[0]['Data_compra']
         print("Digite o novo id do Forncedor desta compra, deixe como 'NULL' ou deixe vazio para nao alterar.")
         fornc_id = input()
-        if(fornc_id == ""):
+        if fornc_id == "":
             fornc_id = select[0]['fk_Fornecedor_Id_fornc']
-        if (fornc_id != "NULL"):
+        if fornc_id != "NULL":
             select = mydb.query_select("fornecedor", ["Id_fornc"], [("Id_fornc", "=", fornc_id, "")], None, True)
-            if (len(select) > 0):
+            if len(select) > 0:
                 fornc_id = int(fornc_id)
                 mydb.query_update("nota_compra", ["Data_compra", "fk_Fornecedor_Id_fornc"], [date, fornc_id], [("Num_nota", "=", id_compra, "")])
             else:
@@ -104,39 +108,41 @@ def edit_nota_compra(mydb):
     else:
         print("A nota de compra nao foi encontrada, tente novamente")
 
+
 def edit_fornc(mydb):
     print("Digite o id do fornecedor a ser editado:")
     id_fornc = input()
     select = mydb.query_select("fornecedor", ["Id_fornc", "CNPJ", "CEP"], [("Id_fornc", "=", id_fornc, "")], None, True)
-    if(len(select) > 0 ):
+    if len(select) > 0:
         print("Digite o novo CNPJ do Fornecedor ou deixe vazio para nao alterar")
         cnpj = input()
-        if(cnpj == ""):
+        if cnpj == "":
             cnpj = select[0]['CNPJ']
         print("Digite o novo CEP do Fornecedor ou deixe vazio para nao alterar")
         cep = input()
-        if(cep == ""):
+        if cep == "":
             cep = select[0]['CEP']
         mydb.query_update("fornecedor", ["CNPJ", "CEP"], [cnpj, cep], [("Id_fornc", "=", id_fornc, "")])
     else:
         print("Fornecedor nao encontrado, tente novamente.")
 
+
 def edit_nota_venda(mydb):
     print("Digite o id da nota de venda a ser editada:")
     id_venda = input()
     select = mydb.query_select("nota_venda", ["Num_nota", "Data_venda", "fk_Cliente_CPF"], [("Num_nota", "=", id_venda, "")], None, True)
-    if (len(select) > 0):
+    if len(select) > 0:
         print("Digite a data da venda(yyyy/mm/dd) ou deixe vazio para nao alterar")
         date = input()
-        if (date == ""):
+        if date == "":
             date = select[0]['Data_venda']
         print("Digite o CPF do cliente desta compra, deixe como 'NULL' ou deixe vazio para nao alterar")
         cliente_cpf = input()
-        if (cliente_cpf == ""):
+        if cliente_cpf == "":
             cliente_cpf = select[0]['fk_Cliente_CPF']
-        if (cliente_cpf != "NULL"):
+        if cliente_cpf != "NULL":
             select = mydb.query_select("cliente", ["CPF"], [("CPF", "=", cliente_cpf, "")], None, True)
-            if (len(select) > 0):
+            if len(select) > 0:
                 mydb.query_update("nota_venda", ["Data_venda", "fk_Cliente_CPF"], [date, cliente_cpf],  [("Num_nota", "=", id_venda, "")])
             else:
                 print("Cliente nao encontrado, cadastre o cliente desejado antes.")
@@ -145,46 +151,49 @@ def edit_nota_venda(mydb):
     else:
         print("Nota de venda nao encontrada, tente novamente")
 
+
 def edit_cliente(mydb):
     print("Digite o CPF do cliente a ser alterado")
     cpf = input()
     select = mydb.query_select("cliente", ["CPF", "Nome", "Telef"], [("CPF", "=", cpf, "")], None, True)
-    if(len(select) > 0 ):
+    if len(select) > 0:
         print("Digite o nome do cliente ou deixe vazio para nao alterar")
         name = input()
-        if(name == ""):
+        if name == "":
             name = select[0]['Nome']
         print("Digite o telefone do cliente ou deixe vazio para nao alterar")
         tel = input()
-        if(tel == ""):
+        if tel == "":
             tel = select[0]['Telef']
         mydb.query_update("cliente", ["Nome", "Telef"], [name, tel], [("CPF", "=", cpf, "")])
     else:
         print("Cliente nao encontrado, tente novamente")
+
 
 def edit_estoq(mydb):
     print("Digite o id do estoque a ser editado")
     id_estoq = input()
     select = mydb.query_select("estocado", ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
                                [("Id_estoque", "=", id_estoq, "")])
-    if (len(select) > 0):
+    if len(select) > 0:
         print("Digite o novo id do produto, deixe como 'NULL' ou vazio para nao alterar")
         id_prod = input()
-        if(id_prod == ""):
+        if id_prod == "":
             id_prod = select[0]['fk_Produto_Id_prod']
-        selectprod = mydb.query_select("produto", ["Id_prod", "Nome", "Descr", "Preco", "fk_Linha_Id_linha"], [("Id_prod", "=", id_prod, "")], None, True)
-        if(len(selectprod) > 0):
+        selectprod = mydb.query_select("produto", ["Id_prod", "Nome", "Descr", "Preco", "fk_Linha_Id_linha"],
+                                       [("Id_prod", "=", id_prod, "")], None, True)
+        if len(selectprod) > 0:
             print("Digite o novo id do almoxarifado, deixe como 'NULL' ou vazio para nao alterar")
             id_almx = input()
-            if(id_almx == ""):
+            if id_almx == "":
                 id_almx = select[0]['fk_Almoxarifado_Id_almx']
             selectalmx = mydb.query_select("almoxarifado", ["Id_almx"], [("Id_almx", "=", id_almx, "")])
-            if (len(selectalmx) > 0):
+            if len(selectalmx) > 0:
                 print("Digite a nova quantidade desse produto, ou deixe vazio para nao alterar")
                 qtde = input()
                 if (qtde == ""):
                    qtde = select[0]['Qtde']
-                mydb.query_update("estocado", ["Qtde", "fk_Almoaxarifado_Id_almx", "fk_Produto_Id_prod"],
+                mydb.query_update("estocado", ["Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
                                   [qtde, id_almx, id_prod], [("Id_estoque", "=", id_estoq, "")])
             else:
                 print("Almoxarifado nao encontrado, tente novamente")
@@ -193,36 +202,38 @@ def edit_estoq(mydb):
     else:
         print("Estoque nao encontrado, tente novamente")
 
+
 def edit_entr(mydb):
     print("Digite o id da entrada de produtos a ser editada")
     id_entr = input()
-    select = mydb.query_select("entrada", ["Id_entr", "Qtde", "Preco_compra", "fk_Nota_compra_Num_nota", "fk_Estocado_Id_estoque",
-                                  "fk_Produto_Id_prod"], [("Id_entr", "=", id_entr, "")])
-    if(len(select) > 0):
+    select = mydb.query_select("entrada", ["Id_entr", "Qtde", "Preco_compra", "fk_Nota_compra_Num_nota",
+                                           "fk_Estocado_Id_estoque"], [("Id_entr", "=", id_entr, "")])
+    if len(select) > 0:
         print("Digite o numero da nova nota de compra correspondente ou deixe vazio para nao alterar")
         num_nota = input()
-        if(num_nota == ""):
+        if num_nota == "":
             num_nota = select[0]['fk_Nota_compra_Num_nota']
         select_numnota = mydb.query_select("nota_compra", ["Num_nota", "Data_compra", "fk_Fornecedor_Id_fornc"],
                                    [("Num_nota", "=", num_nota, "")])
         if len(select_numnota) > 0:
             print("Digite o novo estoque correspondente ou deixe vazio para nao alterar")
             id_estoq = input()
-            if(id_estoq == ""):
+            if id_estoq == "":
                 id_estoq = select[0]['fk_Estocado_Id_estoque']
-            selectestoq = mydb.query_select("estocado", ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
-                                       [("Id_estoque", "=", id_estoq, "")])
-            if (len(selectestoq) > 0):
+            selectestoq = mydb.query_select("estocado", ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx",
+                                                         "fk_Produto_Id_prod"], [("Id_estoque", "=", id_estoq, "")])
+            if len(selectestoq) > 0:
                 print("Digite a nova quantidade desse produto ou deixe vazio para nao alterar")
                 qtde = input()
-                if(qtde == ""):
+                if qtde == "":
                     qtde = select[0]['Qtde']
                 print("Digite o novo preco de compra deste produto ou deixe vazio para nao alterar")
                 price = input()
-                if(price == ""):
+                if price == "":
                     price = select[0]['Preco_compra']
-                mydb.query_update("entrada", ["Qtde", "Preco_compra", "fk_Nota_compra_Num_nota", "fk_Estocado_Id_estoque"],
-                                  [qtde, price, num_nota, id_estoq], [("Id_entr", "=", id_entr, "")])
+                mydb.query_update("entrada", ["Qtde", "Preco_compra", "fk_Nota_compra_Num_nota",
+                                              "fk_Estocado_Id_estoque"], [qtde, price, num_nota, id_estoq],
+                                  [("Id_entr", "=", id_entr, "")])
             else:
                 print("Estoque nao encontrado, tente novamente")
         else:
@@ -230,16 +241,17 @@ def edit_entr(mydb):
     else:
         print("Entrada nao encontrada, tente novamente")
 
+
 def edit_saida(mydb):
     print("Digite o id da saida de produtos a ser editada")
     id_saida = input()
     select = mydb.query_select("saida",
                                ["Id_saida", "Qtde", "Preco_venda", "fk_Estocado_Id_estoque",
                                 "fk_Nota_venda_Num_nota"], [("Id_saida", "=", id_saida, "")])
-    if (len(select) > 0):
+    if len(select) > 0:
         print("Digite o numero da nova nota de venda correspondente ou deixe vazio para nao alterar")
         num_nota = input()
-        if (num_nota == ""):
+        if num_nota == "":
             num_nota = select[0]['fk_Nota_venda_Num_nota']
         select_numnota = mydb.query_select("nota_venda", ["Num_nota", "Data_venda", "fk_Cliente_CPF"],
                                            [("Num_nota", "=", num_nota, "")])
@@ -251,14 +263,14 @@ def edit_saida(mydb):
             selectestoq = mydb.query_select("estocado",
                                             ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
                                             [("Id_estoque", "=", id_estoq, "")])
-            if (len(selectestoq) > 0):
+            if len(selectestoq) > 0:
                 print("Digite a nova quantidade desse produto ou deixe vazio para nao alterar")
                 qtde = input()
-                if (qtde == ""):
+                if qtde == "":
                     qtde = select[0]['Qtde']
                 print("Digite o novo preco de venda deste produto ou deixe vazio para nao alterar")
                 price = input()
-                if (price == ""):
+                if price == "":
                     price = select[0]['Preco_venda']
                 mydb.query_update("saida",
                                   ["Qtde", "Preco_venda", "fk_Estocado_Id_estoque", "fk_Nota_venda_Num_nota"],
