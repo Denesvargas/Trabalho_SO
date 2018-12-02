@@ -9,3 +9,4 @@ Implementar 'autoincremento'(OK) 'view' e 'triggers';
 Implementar CRUD;  
 Relatório;  
   
+LINK DO RELATÓRIO: https://docs.google.com/document/d/1uSGbv_5A7SUw8FeSIb9X2OTJ-r1B_jNE_kz_Lf5X8zE/edit?usp=sharing
