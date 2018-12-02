@@ -5,7 +5,9 @@ CREATE TABLE Produto (
     Nome VARCHAR(40),
     Descr VARCHAR(40),
     Preco FLOAT,
-    fk_Linha_Id_linha INTEGER
+    fk_Linha_Id_linha INTEGER,
+    fk_Nota_venda_Num_nota INTEGER,
+    fk_Nota_compra_Num_nota INTEGER
 );
 
 CREATE TABLE Linha (
@@ -51,7 +53,7 @@ CREATE TABLE Cliente (
 );
 
 CREATE TABLE Nota_venda (
-    Num_nota INTEGER PRIMARY KEY auto_increment not null,
+    Num_nota INTEGER PRIMARY KEY auto_increment not null,    
     Data_venda DATE,
     fk_Cliente_CPF VARCHAR(20)
 );
@@ -67,7 +69,17 @@ ALTER TABLE Produto ADD CONSTRAINT FK_Produto_2
     FOREIGN KEY (fk_Linha_Id_linha)
     REFERENCES Linha (Id_linha)
     ON DELETE SET NULL;
-
+ 
+ALTER TABLE Produto ADD CONSTRAINT FK_Produto_3
+    FOREIGN KEY (fk_Nota_venda_Num_nota)
+    REFERENCES Nota_venda (Num_nota)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Produto ADD CONSTRAINT FK_Produto_4
+    FOREIGN KEY (fk_Nota_compra_Num_nota)
+    REFERENCES Nota_compra (Num_nota)
+    ON DELETE CASCADE;
+ 
 ALTER TABLE Estocado ADD CONSTRAINT FK_Estocado_2
     FOREIGN KEY (fk_Almoxarifado_Id_almx)
     REFERENCES Almoxarifado (Id_almx)
