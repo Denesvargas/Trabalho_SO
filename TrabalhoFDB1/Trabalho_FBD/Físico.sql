@@ -77,12 +77,12 @@ ALTER TABLE Produto ADD CONSTRAINT FK_Produto_2
 ALTER TABLE Estocado ADD CONSTRAINT FK_Estocado_2
     FOREIGN KEY (fk_Almoxarifado_Id_almx)
     REFERENCES Almoxarifado (Id_almx)
-    ON DELETE CASCADE;
+    ON DELETE SET NULL;
  
 ALTER TABLE Estocado ADD CONSTRAINT FK_Estocado_3
     FOREIGN KEY (fk_Produto_Id_prod)
     REFERENCES Produto (Id_prod)
-    ON DELETE CASCADE;
+    ON DELETE SET NULL;
  
 ALTER TABLE Entrada ADD CONSTRAINT FK_Entrada_1
     FOREIGN KEY (fk_Nota_compra_Num_nota)
