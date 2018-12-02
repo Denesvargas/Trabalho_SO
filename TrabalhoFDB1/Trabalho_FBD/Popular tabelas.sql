@@ -1,3 +1,5 @@
+/*apos criar o banco e ele estiver totalmente sem alterações desde sua criação execute os querys abaixo para popular as tabelas*/
+
 INSERT INTO `almoxarifado`(`Descr`) VALUES ('Principal')
 INSERT INTO `almoxarifado`(`Descr`) VALUES ('Secundario')
 INSERT INTO `almoxarifado`(`Descr`) VALUES ('Temporario')
