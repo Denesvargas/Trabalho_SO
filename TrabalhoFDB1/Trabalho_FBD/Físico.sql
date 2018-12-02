@@ -9,7 +9,7 @@ CREATE TABLE Produto (
     Nome VARCHAR(40),
     Descr VARCHAR(40),
     Preco FLOAT,
-    fk_Linha_Id_linha INTEGER,
+    fk_Linha_Id_linha INTEGER
 );
 
 CREATE TABLE Linha (
