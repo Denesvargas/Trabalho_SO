@@ -1,19 +1,24 @@
 def choose_edit_opt(opt, mydb):
     if(opt == 1):
         edit_almx(mydb)
-    elif(opt == 2):
+    elif opt == 2:
         edit_prod(mydb)
-    elif(opt == 3):
+    elif opt == 3:
         edit_linha(mydb)
-    elif (opt == 4):
+    elif opt == 4:
         edit_nota_compra(mydb)
-    elif(opt == 5):
+    elif opt == 5:
         edit_fornc(mydb)
-    elif(opt == 6):
+    elif opt == 6:
         edit_nota_venda(mydb)
-    elif(opt == 7):
+    elif opt == 7:
         edit_cliente(mydb)
-
+    elif opt == 8:
+        edit_entr(mydb)
+    elif opt == 9:
+        edit_entr(mydb)
+    elif opt == 10:
+        edit_saida(mydb)
 
 def edit_almx(mydb):
     print("Digite o id do almoxarifado a ser editado: ")
@@ -187,3 +192,84 @@ def edit_estoq(mydb):
             print("Produto nao encontrado, tente novamente")
     else:
         print("Estoque nao encontrado, tente novamente")
+
+def edit_entr(mydb):
+    print("Digite o id da entrada de produtos a ser editada")
+    id_entr = input()
+    select = mydb.query_select("entrada", ["Id_entr", "Qtde", "Preco_compra", "fk_Nota_compra_Num_nota", "fk_Estocado_Id_estoque",
+                                  "fk_Produto_Id_prod"], [("Id_entr", "=", id_entr, "")])
+    if(len(select) > 0):
+        print("Digite o numero da nova nota de compra correspondente ou deixe vazio para nao alterar")
+        num_nota = input()
+        if(num_nota == ""):
+            num_nota = select[0]['fk_Nota_compra_Num_nota']
+        select_numnota = mydb.query_select("nota_compra", ["Num_nota", "Data_compra", "fk_Fornecedor_Id_fornc"],
+                                   [("Num_nota", "=", num_nota, "")])
+        if len(select_numnota) > 0:
+            print("Digite o novo estoque correspondente ou deixe vazio para nao alterar")
+            id_estoq = input()
+            if(id_estoq == ""):
+                id_estoq = select[0]['fk_Estocado_Id_estoque']
+            selectestoq = mydb.query_select("estocado", ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
+                                       [("Id_estoque", "=", id_estoq, "")])
+            if (len(selectestoq) > 0):
+                print("Digite a nova quantidade desse produto ou deixe vazio para nao alterar")
+                qtde = input()
+                if(qtde == ""):
+                    qtde = select[0]['Qtde']
+                print("Digite o novo preco de compra deste produto ou deixe vazio para nao alterar")
+                price = input()
+                if(price == ""):
+                    price = select[0]['Preco_compra']
+                mydb.query_update("entrada", ["Qtde", "Preco_compra", "fk_Nota_compra_Num_nota", "fk_Estocado_Id_estoque"],
+                                  [qtde, price, num_nota, id_estoq], [("Id_entr", "=", id_entr, "")])
+            else:
+                print("Estoque nao encontrado, tente novamente")
+        else:
+            print("Nota de compra nao encontrada, tente novamente")
+    else:
+        print("Entrada nao encontrada, tente novamente")
+
+def edit_saida(mydb):
+    print("Digite o id da saida de produtos a ser editada")
+    id_saida = input()
+    select = mydb.query_select("saida",
+                               ["Id_saida", "Qtde", "Preco_venda", "fk_Estocado_Id_estoque",
+                                "fk_Nota_venda_Num_nota"], [("Id_saida", "=", id_saida, "")])
+    if (len(select) > 0):
+        print("Digite o numero da nova nota de venda correspondente ou deixe vazio para nao alterar")
+        num_nota = input()
+        if (num_nota == ""):
+            num_nota = select[0]['fk_Nota_venda_Num_nota']
+        select_numnota = mydb.query_select("nota_venda", ["Num_nota", "Data_venda", "fk_Cliente_CPF"],
+                                           [("Num_nota", "=", num_nota, "")])
+        if len(select_numnota) > 0:
+            print("Digite o novo estoque correspondente ou deixe vazio para nao alterar")
+            id_estoq = input()
+            if (id_estoq == ""):
+                id_estoq = select[0]['fk_Estocado_Id_estoque']
+            selectestoq = mydb.query_select("estocado",
+                                            ["Id_estoque", "Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"],
+                                            [("Id_estoque", "=", id_estoq, "")])
+            if (len(selectestoq) > 0):
+                print("Digite a nova quantidade desse produto ou deixe vazio para nao alterar")
+                qtde = input()
+                if (qtde == ""):
+                    qtde = select[0]['Qtde']
+                print("Digite o novo preco de venda deste produto ou deixe vazio para nao alterar")
+                price = input()
+                if (price == ""):
+                    price = select[0]['Preco_venda']
+                mydb.query_update("saida",
+                                  ["Qtde", "Preco_venda", "fk_Estocado_Id_estoque", "fk_Nota_venda_Num_nota"],
+                                  [qtde, price, id_estoq, num_nota], [("Id_saida", "=", id_saida, "")])
+            else:
+                print("Estoque nao encontrado, tente novamente")
+        else:
+            print("Nota de compra nao encontrada, tente novamente")
+    else:
+        print("Saida nao encontrada, tente novamente")
+
+
+
+

@@ -59,6 +59,7 @@ class SQLManager(object):
 
         # Then we go throw the values and add then
         self.query += " VALUES (" + self.order_with_separator(values, bet="'") + ")"
+        print(self.query)
 
     def query_update(self, table, columns, values, where):
         """

@@ -111,7 +111,7 @@ def add_estoq(mydb):
         id_almx = input()
         select = mydb.query_select("almoxarifado", ["Id_almx"], [("Id_almx", "=", id_almx, "")])
         if (len(select) > 0):
-            mydb.query_insert("estocado", ["Qtde", "fk_Almoaxarifado_Id_almx", "fk_Produto_Id_prod"], [qtde, id_almx, id_prod])
+            mydb.query_insert("estocado", ["Qtde", "fk_Almoxarifado_Id_almx", "fk_Produto_Id_prod"], [qtde, id_almx, id_prod])
         else:
             print("Almoxarifado nao encontrado, tente novamente")
     else:
@@ -131,8 +131,8 @@ def add_entr(mydb):
             qtde = input()
             print("Digite o preco de compra deste produto")
             price = input()
-            mydb.query_insert("entrada", ["Qtde", "Preco_compra", "fk_Nota_compra_Num_nota", "fk_Estocado_Id_estoque"],
-                              [qtde, price, num_nota, id_estoq])
+            mydb.query_insert("entrada", ["Qtde", "Preco_compra", "fk_Nota_compra_Num_nota",
+                                          "fk_Estocado_Id_estoque"], [qtde, price, num_nota, id_estoq])
         else:
             print("Estoque nao encontrado, tente novamente")
     else:
@@ -153,9 +153,12 @@ def add_saida(mydb):
             qtde = input()
             print("Digite o preco de venda deste produto")
             price = input()
-            mydb.query_insert("entrada", ["Qtde", "Preco_venda", "fk_Estocado_Id_estoque", "fk_Nota_compra_Num_nota"],
-                              [qtde, price, id_estoq, num_nota])
+            mydb.query_insert("saida", ["Qtde", "Preco_venda", "fk_Estocado_Id_estoque",
+                                        "fk_Nota_venda_Num_nota"], [qtde, price, id_estoq, num_nota])
         else:
             print("Estoque nao encontrado, tente novamente")
     else:
         print("Nota de venda nao encontrada, tente novamente")
+
+
+
