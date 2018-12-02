@@ -34,8 +34,7 @@ CREATE TABLE Entrada (
     Qtde INTEGER,
     Preco_compra FLOAT,
     fk_Nota_compra_Num_nota INTEGER,
-    fk_Estocado_Id_estoque INTEGER,
-    fk_Produto_Id_prod INTEGER
+    fk_Estocado_Id_estoque INTEGER
 );
 
 CREATE TABLE Nota_compra (
@@ -67,8 +66,7 @@ CREATE TABLE Saida (
     Qtde INTEGER,
     Preco_venda FLOAT,
     fk_Estocado_Id_estoque INTEGER,
-    fk_Nota_venda_Num_nota INTEGER,
-    fk_Produto_Id_prod INTEGER
+    fk_Nota_venda_Num_nota INTEGER
 );
  
 ALTER TABLE Produto ADD CONSTRAINT FK_Produto_2
@@ -95,11 +93,6 @@ ALTER TABLE Entrada ADD CONSTRAINT FK_Entrada_2
     FOREIGN KEY (fk_Estocado_Id_estoque)
     REFERENCES Estocado (Id_estoque)
     ON DELETE SET NULL;
-
-ALTER TABLE Entrada ADD CONSTRAINT FK_Entrada_4
-    FOREIGN KEY (fk_Produto_Id_prod)
-    REFERENCES Produto (Id_prod)
-    ON DELETE CASCADE;
     
 ALTER TABLE Nota_compra ADD CONSTRAINT FK_Nota_compra_2
     FOREIGN KEY (fk_Fornecedor_Id_fornc)
@@ -119,9 +112,4 @@ ALTER TABLE Saida ADD CONSTRAINT FK_Saida_1
 ALTER TABLE Saida ADD CONSTRAINT FK_Saida_2
     FOREIGN KEY (fk_Nota_venda_Num_nota)
     REFERENCES Nota_venda (Num_nota)
-    ON DELETE CASCADE;
-    
-ALTER TABLE Saida ADD CONSTRAINT FK_Saida_4
-    FOREIGN KEY (fk_Produto_Id_prod)
-    REFERENCES Produto (Id_prod)
     ON DELETE CASCADE;
