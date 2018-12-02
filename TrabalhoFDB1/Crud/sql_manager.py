@@ -72,8 +72,13 @@ class SQLManager(object):
         self.query = "UPDATE `" + table + "`"
 
         # We connect the columns and the values into one list
-        concat = ["`" + columns[i] + "`='" + str(values[i]) + "'" for i in range(len(columns))]
-
+        concat = []
+        for i in range(len(columns)):
+            if values[i] == "NULL":
+                string = "`" + columns[i] + "`= " + str(values[i]) + " "
+            else:
+                string = "`" + columns[i] + "`='" + str(values[i]) + "'"
+            concat.append(string)
         # Then we add to the query this values
         self.query += " SET " + self.order_with_separator(concat, bet="")
 

@@ -58,7 +58,7 @@ def edit_prod(mydb):
             else:
                 print("Linha de produto nao encontrada, cadastre a linha do produto desejada antes.")
         else:
-            mydb.query_update("produto", ["Nome", "Descr", "Preco"], [name, descr, price], [("Id_prod", "=", id_prod), ""])
+            mydb.query_update("produto", ["Nome", "Descr", "Preco", "fk_Linha_Id_linha"], [name, descr, price, "NULL"], [("Id_prod", "=", id_prod, "")])
     else:
         print("O produto nao foi encontrado, tente novamente.")
 
@@ -91,11 +91,11 @@ def edit_nota_compra(mydb):
             select = mydb.query_select("fornecedor", ["Id_fornc"], [("Id_fornc", "=", fornc_id, "")], None, True)
             if (len(select) > 0):
                 fornc_id = int(fornc_id)
-                mydb.query_update("nota_compra", ["Data_compra", "fk_Fornecedor_Id_fornc"], [date, fornc_id], [("Num_nota", "=", id_compra, "")] )
+                mydb.query_update("nota_compra", ["Data_compra", "fk_Fornecedor_Id_fornc"], [date, fornc_id], [("Num_nota", "=", id_compra, "")])
             else:
                 print("Fornecedor nao encontrado, cadastre o fornecedor desejado antes.")
         else:
-            mydb.query_insert("nota_compra", ["Data_compra"], [date])  # change for except
+            mydb.query_update("nota_compra", ["Data_compra", "fk_Fornecedor_Id_fornc"], [date, "NULL"], [("Num_nota", "=", id_compra, "")])  # change for except
     else:
         print("A nota de compra nao foi encontrada, tente novamente")
 
@@ -136,7 +136,7 @@ def edit_nota_venda(mydb):
             else:
                 print("Cliente nao encontrado, cadastre o cliente desejado antes.")
         else:
-            mydb.query_update("nota_venda", ["Data_venda"], [date], [("Num_nota", "=", id_venda, "")])  # change for except
+            mydb.query_update("nota_venda", ["Data_venda", "fk_Cliente_CPF"], [date, "NULL"], [("Num_nota", "=", id_venda, "")])
     else:
         print("Nota de venda nao encontrada, tente novamente")
 

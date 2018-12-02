@@ -35,8 +35,6 @@ def rem_prod(mydb):
         descr = input()
         if (descr == "S"):
             mydb.query_delete("produto", [("Id_prod", "=", id_prod, "")])
-        else:
-            print("Linha de produto nao encontrada, cadastre a linha do produto desejada antes.")
     else:
         print("O produto nao foi encontrado, tente novamente.")
 
