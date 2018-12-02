@@ -91,7 +91,6 @@ class SQLManager(object):
 
         # Add the where statement
         self.query += " " + self.query_where(where)
-        print(self.query)
 
     def query_select(self, table, columns, where=None, order=None, asc=True):
         """
