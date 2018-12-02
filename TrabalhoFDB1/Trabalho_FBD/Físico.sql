@@ -1,6 +1,9 @@
-/* Lógico_1: */
+/* Lógico_1: 
+Abrir o MySQL e digitar no query para criar o banco de dados:
 CREATE SCHEMA `estoque`;
 
+Após isso definir o banco 'estoque' como o banco de dados padrão no MySQL e executar uma query com o modelo físico a seguir:
+*/
 CREATE TABLE Produto (
     Id_prod INTEGER PRIMARY KEY auto_increment not null,
     Nome VARCHAR(40),
