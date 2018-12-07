@@ -7,12 +7,12 @@
 #include "fila_thread.h"
 
 struct no_add{
-    Thread_arg_add *call;
+    Ins_arg *call;
     No_add* prox;
 };
 
 struct no_rem{
-    Thread_arg_rem *call;
+    Rem_arg *call;
     No_rem* prox;
 };
 
@@ -36,9 +36,12 @@ Fila_rem* fila_rem_cria(){
     return f;
 }
 
-void fila_add_ins(Fila_add *fila, Thread_arg_add *thread_arg){
+void fila_add_ins(Fila_add *fila, void *p, int tam){
     No_add *novo = (No_add*) malloc(sizeof(No_add));
-    novo->call = thread_arg;
+    Ins_arg *ins_arg = (Ins_arg*) malloc(sizeof(Ins_arg));
+    ins_arg->p = p;
+    ins_arg->tam = tam;
+    novo->call = ins_arg;
     novo->prox = NULL;
     if(fila->ini == NULL){
         fila->ini = novo;
@@ -52,9 +55,13 @@ void fila_add_ins(Fila_add *fila, Thread_arg_add *thread_arg){
     }
 }
 
-void fila_rem_ins(Fila_rem *fila, Thread_arg_rem *thread_arg){
+void fila_rem_ins(Fila_rem *fila, void *p, int cap, int *tam){
     No_rem *novo = (No_rem*) malloc(sizeof(No_rem));
-    novo->call = thread_arg;
+    Rem_arg *rem_arg = (Rem_arg*) malloc(sizeof(Rem_arg));
+    rem_arg->p = p;
+    rem_arg->cap = cap;
+    rem_arg->tam = tam;
+    novo->call = rem_arg;
     novo->prox = NULL;
     if(fila->ini == NULL){
         fila->ini = novo;
@@ -68,7 +75,7 @@ void fila_rem_ins(Fila_rem *fila, Thread_arg_rem *thread_arg){
     }
 }
 
-Thread_arg_add* fila_add_del(Fila_add *fila){
+Ins_arg* fila_add_del(Fila_add *fila){
     if(fila->ini != NULL){
         Thread_arg_add *aux = fila->ini->call;
         fila->ini = fila->ini->prox;
@@ -78,7 +85,7 @@ Thread_arg_add* fila_add_del(Fila_add *fila){
         return NULL;
 }
 
-Thread_arg_rem* fila_rem_del(Fila_rem *fila){
+Rem_arg* fila_rem_del(Fila_rem *fila){
     if(fila->ini != NULL){
         Thread_arg_rem *aux = fila->ini->call;
         fila->ini = fila->ini->prox;
@@ -88,11 +95,11 @@ Thread_arg_rem* fila_rem_del(Fila_rem *fila){
         return NULL;
 }
 
-int fila_siz_next(Fila_add *fila){
+/*int fila_siz_next(Fila_add *fila){
     if(fila->ini != NULL)
         return strlen(fila->ini->call->aux);
     return -1;
-}
+}*/
 
 int fila_add_vazia(Fila_add *fila){
     if(fila->ini == NULL)
@@ -108,7 +115,7 @@ int fila_rem_vazia(Fila_rem *fila){
         return 0;
 }
 
-int buffer_ins_verf(Buffer *buf, int tam, Fila_add *fila, int tam2){
+/*int buffer_ins_verf(Buffer *buf, int tam, Fila_add *fila, int tam2){
     int livre = buffer_tam_livre(buf);
     if(fila_add_vazia(fila))
         tam = tam2;
@@ -116,4 +123,4 @@ int buffer_ins_verf(Buffer *buf, int tam, Fila_add *fila, int tam2){
         return 1;             // nao cabe no buffer
     else
         return 0;
-}
+}*/

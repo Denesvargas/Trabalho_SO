@@ -25,20 +25,29 @@ typedef struct {
     pthread_cond_t *cond, *cond2;
 }Thread_arg_rem;
 
+typedef struct {
+    void *p;
+    int tam;
+}Ins_arg;
+
+typedef struct {
+    void *p;
+    int cap;
+    int *tam;
+}Rem_arg;
+
 Fila_add* fila_add_cria();
 
 Fila_rem* fila_rem_cria();
 
-void fila_add_ins(Fila_add *fila, Thread_arg_add *thread_arg);
+void fila_add_ins(Fila_add *fila, void *p, int tam);
 
-void fila_rem_ins(Fila_rem *fila, Thread_arg_rem *thread_arg);
+void fila_rem_ins(Fila_rem *fila, void *p, int cap, int *tam);
 
-Thread_arg_add* fila_add_del(Fila_add *fila);
+Ins_arg* fila_add_del(Fila_add *fila);
 
-Thread_arg_rem* fila_rem_del(Fila_rem *fila);
+Rem_arg* fila_rem_del(Fila_rem *fila);
 
-int fila_siz_next(Fila_add *fila);
+int fila_add_vazia(Fila_add *fila);
 
-Thread_arg_add temp;
-
-int buffer_ins_verf(Buffer *buf, int tam, Fila_add *fila, int tam2);
+int fila_rem_vazia(Fila_rem *fila);

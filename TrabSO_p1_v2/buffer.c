@@ -5,13 +5,17 @@
 #include <semaphore.h>
 #include <pthread.h>
 #include "buffer.h"
+#include "fila_thread.h"
 
 struct buffer{
   int cap;
   char* buffer;
   int index_ins, index_rem;
   pthread_mutex_t mutex;
-  sem_t sem_ins, sem_rem;
+  Fila_add *fila_a;
+  Fila_rem *fila_r;
+  pthread_cond_t cond;
+  pthread_cond_t cond2;
 };
 
 Buffer* buffer_inicializa(int cap){
@@ -20,9 +24,15 @@ Buffer* buffer_inicializa(int cap){
     buff->cap = cap;
     buff->index_ins = 0;
     buff->index_rem = 0;
+    buff->fila_a = fila_add_cria();
+    buff->fila_r = fila_rem_cria();
     pthread_mutex_init(&(buff->mutex), NULL);
-    sem_init(&(buff->sem_ins), 0, 1);
-    sem_init(&(buff->sem_rem), 0, 0);
+    int r = pthread_cond_init((&(buff->cond)), NULL);
+    if(r == 0)
+        printf("sucesso2\n");
+    int r2 = pthread_cond_init(&(buff->cond2), NULL);
+    if(r2 == 0)
+        printf("sucesso\n");
     return buff;
 }
 
@@ -33,12 +43,23 @@ void buffer_finaliza(Buffer *buf){
 }
 
 bool buffer_insere(Buffer *buf, void *p, int tam){
-    sem_wait(&(buf->sem_ins));
-    if(buffer_tam_livre(buf) < tam + 4){
-        sem_post(&(buf->sem_ins));
-        return 0;
-    }
     pthread_mutex_lock(&(buf->mutex));
+    printf("entrou no insere\n");
+    while(buffer_tam_livre(buf) < tam + 4){
+        printf("aqui");
+        fila_add_ins(buf->fila_a, p, tam);
+        printf("aqui insere");
+        pthread_cond_wait(&(buf->cond2), &(buf->mutex));
+    }
+    if(!fila_add_vazia(buf->fila_a)){
+        Ins_arg *arg = fila_add_del(buf->fila_a);
+        if(arg->p != p){
+            fila_add_ins(buf->fila_a, p, tam);
+            p = arg->p;
+            tam = arg->tam;
+        }
+        free(arg);
+    }
     char* aux = (char*) p;
     unsigned char* data = (char*) malloc(4 + tam);
     int k, j , i;
@@ -70,9 +91,10 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     free(pv);
     k = k % buf->cap;
     buf->index_ins = k;
-    //printf("Inseriu\n");
+    printf("Inseriu\n");
+    pthread_cond_signal(&(buf->cond));
     pthread_mutex_unlock(&(buf->mutex));
-    sem_post(&(buf->sem_rem));
+    printf("inseriu final\n");
     return 1;
 }
 
@@ -97,8 +119,6 @@ void buffer_imprime(Buffer *buf){
                     pc[n] = buf->buffer[i + n];
                 header = pi[0];
             }
-
-
             printf("%d  -> ", header);
             i += 4;                                    // arrumar header
             for (j = 0; j < header; j++)
@@ -114,12 +134,24 @@ void buffer_imprime(Buffer *buf){
 }
 
 bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
-    sem_wait(&(buf->sem_rem));
-    if(buf->index_ins == buf->index_rem){
-        sem_post(&(buf->sem_ins));
-        return 0;
-    }
     pthread_mutex_lock(&(buf->mutex));
+    printf("entrou no remove\n");
+    while(buf->index_ins == buf->index_rem){
+        fila_rem_ins(buf->fila_r, p, cap, tam);
+        printf("aqui remove");
+        pthread_cond_wait(&(buf->cond), &(buf->mutex));
+    }
+    if(!fila_rem_vazia(buf->fila_r)){
+        Rem_arg *arg = fila_rem_del(buf->fila_r);
+        if(arg->p != p){
+            fila_rem_ins(buf->fila_r, p, cap, tam);
+            p = arg->p;
+            cap = arg->cap;
+            tam = arg->tam;
+        }
+        free(arg);
+    }
+
     char* aux = (char*) p;
     int i, k;
     if(buf->cap - buf->index_rem < 4)
@@ -144,11 +176,13 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     }
     buf->index_rem = (i + k) % buf->cap;
     free(pv);
-    //printf("removeu\n");
+    printf("removeu\n");
     //buffer_printa(buf);
+    pthread_cond_t *temp = &(buf->cond2);
+    pthread_cond_signal(temp);
     pthread_mutex_unlock(&(buf->mutex));
-    sem_post(&(buf->sem_ins));
     *tam = siz;
+    printf("removeu final\n");
     return 1;
 }
 
