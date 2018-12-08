@@ -17,9 +17,22 @@ int main(){
 
     strcpy(pr,"CARALHO\n");
 
-    entrelacamento(pos,0,buff);
+    //Testezao do krl:
 
-    entrelacamento(pos2,1,buff2);
+    for(int i = 0; i< 100; i++){
+      pos[2] = i;
+      entrelacamento(pos,0,buff);
+    }
+
+    for(int i = 0; i< 100; i++){
+      pos2[0] = i;
+      pos2[2] = i;
+      entrelacamento(pos2,1,buff2);
+    }
+
+    //entrelacamento(pos,0,buff);
+
+    //entrelacamento(pos2,1,buff2);
 
     printf("%s\n",pr2);
 }

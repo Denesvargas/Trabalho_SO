@@ -45,7 +45,7 @@ void entrelacamento(int id[], int tipo, void* buff){
       cursor = cursor % SET_TRILHA;
     }
 
-    printf("POS LOGICA: %d - POS REAL: %d\n",set,cursor);
+    //printf("POS LOGICA: %d - POS REAL: %d\n",set,cursor);
 
     id[2] = cursor;
     disco_Acesso(id,tipo,buff);
@@ -58,6 +58,7 @@ void mySleep(clock_t start, long time){
 void disco_Acesso(int id[], int tipo, void* buff){
     clock_t start = clock();
     int pos = (id[0]*SET_TRILHA) + (id[1] * TRILHAS * SET_TRILHA) + id[2];
+    printf("posicao: %d\n",pos);
     if(tipo == LEITURA){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
@@ -71,7 +72,7 @@ void disco_Acesso(int id[], int tipo, void* buff){
         fwrite (buff, SETOR_SIZE, 1, fp);
         close();
     }
-    long timelapse = abs(id[1]-Disk_pos[1]) * TEMPO_TROCA_LINHA;
+    long timelapse = abs(id[0]-Disk_pos[0]) * TEMPO_TROCA_LINHA;
     int rotacao = id[2] - Disk_pos[2] < 0 ? (SET_TRILHA - abs(id[2] - Disk_pos[2])) : (id[2] - Disk_pos[2]);
     if(rotacao != 0)
       timelapse += (long)(166 / rotacao);
