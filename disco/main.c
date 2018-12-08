@@ -10,11 +10,16 @@ int main(){
     void* buff2 = malloc(512);
     char* pr2 = (char*)buff2;
 
-    strcpy(pr,"CARALHO");
+    int pos[] = {1,2,8};
+    int pos2[] = {1,2,8};
 
-    entrelacamento(5,0,buff);
+    inicializa();
 
-    entrelacamento(5,1,buff2);
+    strcpy(pr,"CARALHO\n");
 
-    printf("%s\n",buff2);
+    entrelacamento(pos,0,buff);
+
+    entrelacamento(pos2,1,buff2);
+
+    printf("%s\n",pr2);
 }
