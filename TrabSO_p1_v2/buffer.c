@@ -2,9 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <semaphore.h>
 #include <pthread.h>
-#include "buffer.h"
 #include "fila_thread.h"
 
 struct buffer{
@@ -12,29 +10,28 @@ struct buffer{
   char* buffer;
   int index_ins, index_rem;
   pthread_mutex_t mutex;
-  Fila_add *fila_a;
-  Fila_rem *fila_r;
+  Fila_add *fila_ad;
+  Fila_rem *fila_re;
   pthread_cond_t cond;
   pthread_cond_t cond2;
+  pthread_condattr_t cattr;
 };
 
 Buffer* buffer_inicializa(int cap){
-    Buffer* buff = (Buffer*) malloc(sizeof(Buffer*));
+    Buffer* buff = (Buffer*) malloc(sizeof(Buffer));
+    pthread_condattr_setpshared(&(buff->cattr), PTHREAD_PROCESS_SHARED);
+    pthread_mutex_init(&(buff->mutex), NULL);
+    pthread_cond_init(&(buff->cond), &(buff->cattr));
+    pthread_cond_init(&(buff->cond2), &(buff->cattr));
     buff->buffer = (char*) malloc(cap);
     buff->cap = cap;
     buff->index_ins = 0;
     buff->index_rem = 0;
-    buff->fila_a = fila_add_cria();
-    buff->fila_r = fila_rem_cria();
-    pthread_mutex_init(&(buff->mutex), NULL);
-    int r = pthread_cond_init((&(buff->cond)), NULL);
-    if(r == 0)
-        printf("sucesso2\n");
-    int r2 = pthread_cond_init(&(buff->cond2), NULL);
-    if(r2 == 0)
-        printf("sucesso\n");
+    buff->fila_ad = fila_add_cria();
+    buff->fila_re = fila_rem_cria();
     return buff;
 }
+
 
 void buffer_finaliza(Buffer *buf){
     free(buf->buffer);
@@ -44,22 +41,22 @@ void buffer_finaliza(Buffer *buf){
 
 bool buffer_insere(Buffer *buf, void *p, int tam){
     pthread_mutex_lock(&(buf->mutex));
-    printf("entrou no insere\n");
     while(buffer_tam_livre(buf) < tam + 4){
-        printf("aqui");
-        fila_add_ins(buf->fila_a, p, tam);
-        printf("aqui insere");
+        printf("\n#################################################################ins\n#################################################################ins\n#################################################################ins\n");
+        fila_add_ins(buf->fila_ad, p, tam);
         pthread_cond_wait(&(buf->cond2), &(buf->mutex));
     }
-    if(!fila_add_vazia(buf->fila_a)){
-        Ins_arg *arg = fila_add_del(buf->fila_a);
+    printf("Antes de entrar ins\n");
+    if(!fila_add_vazia(buf->fila_ad)){
+        Ins_arg *arg = fila_add_del(buf->fila_ad);
         if(arg->p != p){
-            fila_add_ins(buf->fila_a, p, tam);
+            fila_add_ins(buf->fila_ad, p, tam);
             p = arg->p;
             tam = arg->tam;
         }
         free(arg);
     }
+    printf("nao entrou na ins\n");
     char* aux = (char*) p;
     unsigned char* data = (char*) malloc(4 + tam);
     int k, j , i;
@@ -76,7 +73,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
         data[z] = pp[z];
     }
     // STRCAT não é o melhor metodo, da pra usar um for i 0:4 passando um por vez
-
+    printf("no meio\n");
     for(k = 4, i = 0; i < tam; k++, i++){
         data[k] = aux[i];
     }
@@ -91,10 +88,9 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     free(pv);
     k = k % buf->cap;
     buf->index_ins = k;
-    printf("Inseriu\n");
+    printf("inseriu\n");
     pthread_cond_signal(&(buf->cond));
     pthread_mutex_unlock(&(buf->mutex));
-    printf("inseriu final\n");
     return 1;
 }
 
@@ -135,23 +131,21 @@ void buffer_imprime(Buffer *buf){
 
 bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     pthread_mutex_lock(&(buf->mutex));
-    printf("entrou no remove\n");
     while(buf->index_ins == buf->index_rem){
-        fila_rem_ins(buf->fila_r, p, cap, tam);
-        printf("aqui remove");
+        //fila_rem_ins(buf->fila_re, p, cap, tam);
+        printf("\n#################################################################\n");
         pthread_cond_wait(&(buf->cond), &(buf->mutex));
     }
-    if(!fila_rem_vazia(buf->fila_r)){
-        Rem_arg *arg = fila_rem_del(buf->fila_r);
-        if(arg->p != p){
-            fila_rem_ins(buf->fila_r, p, cap, tam);
-            p = arg->p;
-            cap = arg->cap;
-            tam = arg->tam;
+    /*if(!fila_rem_vazia(buf->fila_re)){
+        Rem_arg *temp = fila_rem_del(buf->fila_re);
+        if(temp->p != p){
+            fila_rem_ins(buf->fila_re, p, cap, tam);
+            p = temp->p;
+            cap = temp->cap;
+            tam = temp->tam;
         }
-        free(arg);
-    }
-
+        free(temp);
+    }*/
     char* aux = (char*) p;
     int i, k;
     if(buf->cap - buf->index_rem < 4)
@@ -166,7 +160,6 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
         pc[n] = buf->buffer[buf->index_rem + n];
     // passa o unico inteiro do vetor void para a variavel tamanho2
     int siz = pi[0];
-
     buf->index_rem += 4;
     for(i = 0, k = buf->index_rem; i < siz; i++){
         if(i < cap){
@@ -177,12 +170,9 @@ bool buffer_remove(Buffer *buf, void *p, int cap, int *tam){
     buf->index_rem = (i + k) % buf->cap;
     free(pv);
     printf("removeu\n");
-    //buffer_printa(buf);
-    pthread_cond_t *temp = &(buf->cond2);
-    pthread_cond_signal(temp);
     pthread_mutex_unlock(&(buf->mutex));
+    pthread_cond_signal(&(buf->cond2));
     *tam = siz;
-    printf("removeu final\n");
     return 1;
 }
 
