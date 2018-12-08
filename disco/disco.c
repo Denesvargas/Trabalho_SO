@@ -9,6 +9,7 @@
 
 #define TEMPO_TROCA_LINHA 80
 #define TEMPO_ROTACAO 166
+#define TEMPO_TROCA_SET (TEMPO_ROTACAO / SET_TRILHA)
 
 #define ENTRELACAMENTO 3
 
@@ -19,21 +20,28 @@
 
 
 int Disk_pos[3];
+long passed_time;
 FILE* fp;
-
-void inicializa(){
-  fp = fopen(ARQUIVO,"w");
-  fclose(fp);
-  for(int i = 0; i< 3; i++)
-    Disk_pos[i] = 0;
-}
 
 void open(){
     fp = fopen(ARQUIVO,"r+");
 }
 
+void open_write(){
+  fp = fopen(ARQUIVO,"w");
+}
+
 void close(){
     fclose(fp);
+}
+
+void inicializa(){
+  open_write();
+  fseek(fp, SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO, SEEK_SET);
+  fputc(0, fp);
+  fclose(fp);
+  for(int i = 0; i< 3; i++)
+    Disk_pos[i] = 0;
 }
 
 void entrelacamento(int id[], int tipo, void* buff){
@@ -63,19 +71,28 @@ void disco_Acesso(int id[], int tipo, void* buff){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
         fread (buff, SETOR_SIZE, 1, fp);
+        printf("lido: %s\n", buff);
         close();
     }
     else{
         open();
-        fseek (fp, pos*SETOR_SIZE, SEEK_SET);
-
-        fwrite (buff, SETOR_SIZE, 1, fp);
+        char* dk = (char*)malloc(SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO);
+        fread(dk,SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO, 1,fp);
         close();
+        strcpy(&dk[pos*SETOR_SIZE],buff);
+        printf(" -- %s\n\n",&dk[pos*SETOR_SIZE]);
+        open_write();
+        fwrite (dk, SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO, 1, fp);
+        close();
+        free(dk);
     }
+
     long timelapse = abs(id[0]-Disk_pos[0]) * TEMPO_TROCA_LINHA;
+    Disk_pos[2] = (Disk_pos[2] + (timelapse / TEMPO_TROCA_SET)) % SET_TRILHA;
     int rotacao = id[2] - Disk_pos[2] < 0 ? (SET_TRILHA - abs(id[2] - Disk_pos[2])) : (id[2] - Disk_pos[2]);
     if(rotacao != 0)
       timelapse += (long)(166 / rotacao);
+
     printf("time : %ld\n",timelapse);
     for(int i = 0; i< 3; i++)
       Disk_pos[i] = id[i];
