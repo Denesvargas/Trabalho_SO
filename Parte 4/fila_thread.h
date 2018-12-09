@@ -55,7 +55,7 @@ typedef struct {
 }Thread_arg_clie;
 
 typedef struct {
-    int id_setor, op, id_buf;
+    int *id_setor, op, id_buf;
     char *buff;
 }Pacote_ped;
 
