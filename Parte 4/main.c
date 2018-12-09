@@ -6,13 +6,15 @@
 #include <time.h>
 #include "fila_thread.h"
 
-#define N_CLIENTES 1
+#define N_CLIENTES 2
 #define TAM_BUFF_SERV 10000
 #define TAM_BUFF_CLIE 2000
+#define FAT_ENTRELACAMENTO 1
 
 void* thread_serv(void *p);
 void* thread_clie(void *p);
-Pacote_ped* cria_pacote(int num_buf);
+Pacote_ped* cria_pacote(int op);
+Pacote_resp* cria_pacote_resp(char *pr, int op);
 
 int main(){
     Buffer *buf_serv = buffer_inicializa(TAM_BUFF_SERV), *buf_cli[N_CLIENTES];
@@ -24,15 +26,14 @@ int main(){
     Thread_arg_serv args_serv;
     Thread_arg_clie args_clie[N_CLIENTES];
 
-    inicializa();
+    inicializa(FAT_ENTRELACAMENTO);
     args_serv.buf_serv = buf_serv;
     args_serv.buf_clie = buf_cli;
     for(i = 0; i < N_CLIENTES; i++){
         args_clie[i].buf = buf_cli[i];
         args_clie[i].buf_serv = buf_serv;
+        args_clie[i].num = i;
     }
-    clock_t tempo_ini, tempo_fim;
-    tempo_ini = clock();
 
     pthread_create(&t_serv, NULL, thread_serv, &args_serv);
     for(i = 0; i < N_CLIENTES; i++){
@@ -42,51 +43,52 @@ int main(){
     for(i = 0; i < N_CLIENTES; i++){
         r = pthread_join(t_clie[i], NULL);
     }
-    tempo_fim = clock();
     printf("FIM\n");
-    int tempo = (tempo_fim - tempo_ini)*1000/CLOCKS_PER_SEC;
-    printf("Tempo total %d.\n", tempo);
 }
 
 void* thread_serv(void *p){
-    int i = 0;
-    while(i < 1){
+    int l = 0;
+    while(l < N_CLIENTES){
         Thread_arg_serv *p_arg = (Thread_arg_serv*) p;
         // espera algum pacote_pedido chegar
         Buffer *buf_serv = p_arg->buf_serv;
         Buffer **buf_clie = p_arg->buf_clie;
-        int siz = sizeof(Pacote_ped*), tam = 0;
+        int siz = sizeof(Pacote_ped), tam = 0;
         void *p_aux = (void*) malloc(siz);
-        printf("thread servidor espera pedido\n");
+        printf("\n#thread servidor espera pedido#\n\n");
 
         buffer_remove(buf_serv, p_aux, siz, &tam);
-        printf("serv - %d\n",(Pacote_ped*) p_aux);
         Pacote_ped *pacte = (Pacote_ped*) p_aux;
 
-        //ESSES PRINTS DE LEITURA QUE TRAVAM PQ NAO CONSEGUEM ACESSAR A STRUCT QUE VEIO PELO BUFFER
-        printf("antes op %d %d\n", pacte->op, pacte->id_buf);
-        printf("antes set %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
-        printf("%s\n", pacte->buff);
-        // coloca o pedido na fila
+        printf("operacao %d do cliente %d.\n", pacte->op, pacte->id_buf);
+        printf("setor %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
+        if(!pacte->op)
+            printf("Escrito no disco: %s\n", pacte->buff);
+        // coloca o pedido na fila @@IMPLEMENTAR@@
 
         // executa o pacote pedido chamando as funcoes do disco
         void* buff = malloc(512);
         char* pr = (char*)buff;
-        entrelacamento(pacte->id_setor, pacte->op, buff);
-        if(pacte->op)
-            printf("%s\n",pr);
-        else
-            strcpy(pr,"CARALHO");
+        //leitura
+        if(pacte->op){
+            entrelacamento(pacte->id_setor, pacte->op, buff);
+        }
+        //escrita
+        else{
+            int j;
+            for(j = 0; j < strlen(pacte->buff); j++)
+                pr[j] = pacte->buff[j];
+            entrelacamento(pacte->id_setor, pacte->op, buff);
+        }
+
         // escreve no buffer da thread_cliente correspondente a resposta
-        Pacote_resp *pacte_r;
-        pacte_r->buff = pr;
-        pacte_r->resp = 1;
-        int taman = sizeof(Pacote_resp*);
+        Pacote_resp *pacte_r = cria_pacote_resp(pr, pacte->op);
+        int taman = sizeof(Pacote_resp);
         void *p = (void*) pacte_r;
         int r = buffer_insere(buf_clie[pacte->id_buf], p, taman);
         if(!r)
             printf("erro na insercao do serv->clie");
-        i++;
+        l++;
     }
     return 0;
 }
@@ -97,41 +99,59 @@ void* thread_clie(void *p){
         Thread_arg_clie *p_arg = (Thread_arg_clie*) p;
         Buffer *buf_serv = p_arg->buf_serv;
         Buffer *buf_clie = p_arg->buf;
-        printf("thread cliente inicio\n");
+        printf("thread cliente %d inicia\n", p_arg->num);
 
         // manda um pacote pedido para o buffer da thread servidora
-        void *p_aux = (void*) cria_pacote(p_arg->num);
-        int taman = sizeof(Pacote_ped*);
-
-        printf("clie - %d\n",(Pacote_ped*) p_aux);
+        int op = p_arg->num;
+        void *p_aux = (void*) cria_pacote(op);
+        int taman = sizeof(Pacote_ped);
 
         int r = buffer_insere(buf_serv, p_aux, taman);
         if(!r)
             printf("Nao inseriu\n");
         // espera a resposta do pedido da thread servidora chegar no seu buffer
-        int siz_rem = sizeof(Pacote_resp*);
+        int siz_rem = sizeof(Pacote_resp);
         int tam = 0;
         void *p = (void*) malloc(siz_rem);
         buffer_remove(buf_clie, p, siz_rem, &tam);
+        Pacote_resp *resp = (Pacote_resp*) p;
+        if(resp->resp){
+            printf("operacao realizada com sucesso.\n");
+            if(resp->op){
+                printf("conteudo lido do disco -> %s\n", resp->buff);
+            }
+        }
         l++;
     }
     return 0;
 }
 
-Pacote_ped* cria_pacote(int num_buf){
+Pacote_ped* cria_pacote(int buff){
     Pacote_ped *pacte = (Pacote_ped*) malloc(sizeof(Pacote_ped));
     int *p_set = (int*) malloc(sizeof(int)*3);
     p_set[0] = 0;
     p_set[1] = 0;
     p_set[2] = 1;
     pacte->id_setor = p_set;
-    pacte->id_buf = num_buf;
-    pacte->op = 1;
-    char *aux = (char*) malloc(20), *temp = "Testando\n";
-    int i;
-    for(i = 0; i < strlen(temp); i++)
-        aux[i] = temp[i];
-    pacte->buff = aux;
-    printf("cria pacote - %d\n", pacte);
+    pacte->id_buf = buff;
+    pacte->op = buff % 2;
+    if(!(buff % 2)){
+        char *temp = "isso eh o que foi colocado\n";
+        int i;
+        for(i = 0; i < strlen(temp); i++)
+            pacte->buff[i] = temp[i];
+    }
     return pacte;
+}
+
+Pacote_resp* cria_pacote_resp(char *pr, int op){
+    int i;
+    Pacote_resp *resp = (Pacote_resp*) malloc(sizeof(Pacote_resp));
+    if(op){
+        for(i = 0; i < strlen(pr); i++)
+            resp->buff[i] = pr[i];
+    }
+    resp->op = op;
+    resp->resp = 1;
+    return resp;
 }

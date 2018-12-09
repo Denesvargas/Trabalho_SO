@@ -56,12 +56,12 @@ typedef struct {
 
 typedef struct {
     int *id_setor, op, id_buf;
-    char *buff;
+    char buff[512];
 }Pacote_ped;
 
 typedef struct {
-    int resp;
-    char *buff;
+    int resp, op;
+    char buff[512];
 }Pacote_resp;
 
 

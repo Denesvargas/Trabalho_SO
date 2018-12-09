@@ -11,7 +11,7 @@
 #define TEMPO_TRANSF 22
 #define TEMPO_TROCA_LINHA 6
 #define TEMPO_ROTACAO 200
-#define TEMPO_TROCA_SET 22
+#define TEMPO_TROCA_SET (TEMPO_ROTACAO / SET_TRILHA)
 
 #define ENTRELACAMENTO 1
 
@@ -77,11 +77,13 @@ void inicializa(int ent){
   calcula_set(ent);
 }
 
-long entrelacamento(int id[], int tipo, void* buff){
+void entrelacamento(int id[], int tipo, void* buff){
+
+
     //printf("POS LOGICA: %d - POS REAL: %d\n",id[2],Ent_Setor[id[2]]);
 
     id[2] = Ent_Setor[id[2]];
-    return disco_Acesso(id,tipo,buff);
+    float ret = disco_Acesso(id,tipo,buff);
 }
 
 void mySleep(clock_t start, long time){
@@ -96,7 +98,7 @@ long disco_Acesso(int id[], int tipo, void* buff){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
         fread (buff, SETOR_SIZE, 1, fp);
-        //printf("lido: %s\n", buff);
+        printf("lido: %s\n", buff);
         close();
     }
     else{
@@ -112,15 +114,13 @@ long disco_Acesso(int id[], int tipo, void* buff){
         free(dk);
     }
     long timelapse = abs(id[0]-Disk_pos[0]) * TEMPO_TROCA_LINHA;
-    //Disk_pos[2] = ((clock()-passed_time) / TEMPO_TROCA_SET) % SET_TRILHA;
-    Disk_pos[2] = (((clock()*1000 / CLOCKS_PER_SEC)-passed_time)%TEMPO_ROTACAO)/ TEMPO_TROCA_SET;
+    Disk_pos[2] = ((clock()-passed_time) / TEMPO_TROCA_SET) % SET_TRILHA;
     //printf("-- pa: %d  --  pf: %d --\n",Disk_pos[2],id[2]);
-    //printf( " tempo: %d  pos %d \n", (clock()-passed_time)%TEMPO_ROTACAO, ((clock()-passed_time)%TEMPO_ROTACAO)/ TEMPO_TROCA_SET );
     int rotacao = id[2] - Disk_pos[2] < 0 ? (SET_TRILHA - abs(id[2] - Disk_pos[2])) : (id[2] - Disk_pos[2]);
-    //printf("id: %d   Disk: %d rotacao: %d \n",id[2],Disk_pos[2], rotacao);
+    //printf("id: %d   Disk: %d ",id[2],Disk_pos[2]);
     timelapse += (TEMPO_TROCA_SET * rotacao);
     timelapse += TEMPO_TRANSF;
-    //printf("time : %ld\n",timelapse);
+    printf("time : %ld\n",timelapse);
 
     Disk_pos[0] = id[0];
 

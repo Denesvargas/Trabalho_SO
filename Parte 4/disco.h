@@ -4,6 +4,6 @@
 
 long disco_Acesso(int id[], int tipo, void* buff);
 
-long entrelacamento(int id[], int tipo, void* buff);
+void entrelacamento(int id[], int tipo, void* buff);
 
 void inicializa(int ent);
