@@ -14,25 +14,29 @@ int main(){
     int pos2[] = {0,0,1};
     int pos3[] = {0,0,2};
 
+    int pos4[] = {0,0,0};
+    int pos5[] = {0,0,1};
+    int pos6[] = {0,0,2};
+
     inicializa();
 
 
     //Testezao do krl:
 
-    strcpy(pr,"CARALHO\n");
+    strcpy(pr,"CARALHO");
     entrelacamento(pos2,0,buff);
-    strcpy(pr,"CARALHO2\n");
+    strcpy(pr,"CARALHO2");
     entrelacamento(pos,0,buff);
-    strcpy(pr,"CARALHO3\n");
+    strcpy(pr,"CARALHO3");
     entrelacamento(pos3,0,buff);
 
     printf("\n\nremover:\n\n");
 
-    entrelacamento(pos2,1,buff2);
+    entrelacamento(pos4,1,buff2);
     printf("%s\n",pr2);
-    entrelacamento(pos3,1,buff2);
+    entrelacamento(pos5,1,buff2);
     printf("%s\n",pr2);
-    entrelacamento(pos,1,buff2);
+    entrelacamento(pos6,1,buff2);
     printf("%s\n",pr2);
 
 }

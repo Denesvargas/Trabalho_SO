@@ -1,6 +1,7 @@
 #include"disco.h"
 #include"time.h"
 
+
 // 6 rota�oes por segundo = 166ms, 80ms pra trocar de trilha
 #define ROTACAO 6
 #define TRILHAS 80
@@ -42,6 +43,9 @@ void inicializa(){
   fclose(fp);
   for(int i = 0; i< 3; i++)
     Disk_pos[i] = 0;
+  long t1 = time(NULL);
+  while(time(NULL) - t1 < 1);
+  passed_time = (clock() * 1000) / CLOCKS_PER_SEC;
 }
 
 void entrelacamento(int id[], int tipo, void* buff){
@@ -66,7 +70,7 @@ void mySleep(clock_t start, long time){
 void disco_Acesso(int id[], int tipo, void* buff){
     clock_t start = clock();
     int pos = (id[0]*SET_TRILHA) + (id[1] * TRILHAS * SET_TRILHA) + id[2];
-    printf("posicao: %d\n",pos);
+    //printf("posicao: %d\n",pos);
     if(tipo == LEITURA){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
@@ -88,10 +92,10 @@ void disco_Acesso(int id[], int tipo, void* buff){
     }
 
     long timelapse = abs(id[0]-Disk_pos[0]) * TEMPO_TROCA_LINHA;
-    Disk_pos[2] = (Disk_pos[2] + (timelapse / TEMPO_TROCA_SET)) % SET_TRILHA;
+    Disk_pos[2] = (passed_time % 166) / TEMPO_TROCA_SET;
     int rotacao = id[2] - Disk_pos[2] < 0 ? (SET_TRILHA - abs(id[2] - Disk_pos[2])) : (id[2] - Disk_pos[2]);
     if(rotacao != 0)
-      timelapse += (long)(166 / rotacao);
+      timelapse += (long)(TEMPO_TROCA_SET * rotacao);
 
     printf("time : %ld\n",timelapse);
     for(int i = 0; i< 3; i++)
