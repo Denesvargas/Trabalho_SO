@@ -23,6 +23,7 @@ int main(){
     Thread_arg_serv args_serv;
     Thread_arg_clie args_clie[N_CLIENTES];
 
+    inicializa();
     args_serv.buf_serv = buf_serv;
     args_serv.buf_clie = buf_cli;
     for(i = 0; i < N_CLIENTES; i++){
@@ -51,11 +52,32 @@ void* thread_serv(void *p){
     while(i < 1){
         Thread_arg_serv *p_arg = (Thread_arg_add*) p;
         // espera algum pacote_pedido chegar
+        Buffer *buf_serv = p_arg->buf_serv;
+        Buffer *buf_clie[N_CLIENTES] = p_arg->buf_clie;
+        int siz = sizeof(Pacote_ped), tam = 0;
+        void *p_aux = (void*) malloc(siz);
+        buffer_remove(buf_serv, p_aux, siz, &tam);
+        Pacote_ped pacte = (Pacote_ped) p_aux;
+        // coloca o pedido na fila
 
         // executa o pacote pedido chamando as funcoes do disco
-
+        void* buff = malloc(512);
+        char* pr = (char*)buff;
+        entrelacamento(pacte.id_setor, pacte.op, buff);
+        if(pacte.op)
+            printf("%s\n",pr);
+        else
+            strcpy(pr,"CARALHO");
         // escreve no buffer da thread_cliente correspondente a resposta
-
+        Pacote_resp pacte_r;
+        pacte_r.buff = pr;
+        pacte_r.resp = 1;
+        int taman = sizeof(Pacote_resp);
+        void *p = (void*) pacte_r;
+        int r = buffer_insere(buf_clie[pacte.id_buf], p, taman);
+        if(!r)
+            printf("erro na insercao do serv->clie");
+        i++;
     }
     return 0;
 }
@@ -64,11 +86,26 @@ void* thread_clie(void *p){
     int l = 0;
     while(l < 1){
         Thread_arg_clie *p_arg = (Thread_arg_rem*) p;
-
+        Buffer *buf_serv = p_arg->buf_serv;
+        Buffer *buf_clie = p_arg->buf;
+        Pacote_ped pacte;
+        pacte.id_setor = 0;
+        pacte.id_buf = 0;
+        pacte.op = 0;
+        pacte.buff = "tesTando";
         // manda um pacote pedido para o buffer da thread servidora
-
+        void *p_aux = (void*) pacte;
+        int taman = sizeof(Pacote_ped);
+        int r = buffer_insere(buf_serv, p_aux, taman);
+        if(!r)
+            printf("Nao inseriu\n");
         // espera a resposta do pedido da thread servidora chegar no seu buffer
-
+        int siz_rem = sizeof(Pacote_resp);
+        int tam = 0, r = 0, i;
+        void *p_aux = (void*) malloc(siz_rem);
+        buffer_remove(buf_clie, p_aux, siz_rem, &tam);
+        free(p_aux);
+        l++;
     }
     return 0;
 }
