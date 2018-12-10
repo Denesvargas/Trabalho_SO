@@ -89,7 +89,7 @@ void* thread_serv(void *p){
           printf("operacao %d do cliente %d, direcao %d.\n", pacte->op, pacte->id_buf, fs->direction);
           printf("setor %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
           if(!pacte->op);
-              printf("Escrito no disco: %s\n", pacte->buff);
+              //printf("Escrito no disco: %s\n", pacte->buff);
             // coloca o pedido na fila @@IMPLEMENTAR@@
 
           // executa o pacote pedido chamando as funcoes do disco

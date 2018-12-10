@@ -1,14 +1,14 @@
 #include "fila_thread.h"
 
 typedef struct no_serv{
-  Pacote_ped* pedido;
-  struct no_serv* prox;
+    Pacote_ped* pedido;
+    struct no_serv* prox;
 } No_serv;
 
 typedef struct fila_serv{
-  No_serv* no;
-  int current_track;
-  int direction;
+    No_serv* no;
+    int current_track;
+    int direction;
 } Fila_serv;
 
 int fila_vazia(Fila_serv* fs);

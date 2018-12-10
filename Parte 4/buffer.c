@@ -59,7 +59,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     int k, j , i;
     // Cria um vetor void do tamanho do header;
     void* pv = malloc (4);
-    // Transforma ele em um vetor de int com 1 posição;
+    // Transforma ele em um vetor de int com 1 posiï¿½ï¿½o;
     int* pi = (int*)pv;
     // Coloca o tamanho dentro desse vetor void(int);
     *pi = tam;
@@ -69,7 +69,7 @@ bool buffer_insere(Buffer *buf, void *p, int tam){
     for(int z=0; z<4;z++){
         data[z] = pp[z];
     }
-    // STRCAT não é o melhor metodo, da pra usar um for i 0:4 passando um por vez
+    // STRCAT nï¿½o ï¿½ o melhor metodo, da pra usar um for i 0:4 passando um por vez
     for(k = 4, i = 0; i < tam; k++, i++){
         data[k] = aux[i];
     }
