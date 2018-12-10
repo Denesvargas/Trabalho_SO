@@ -175,6 +175,7 @@ Pacote_resp* cria_pacote_resp(char *pr, int op){
     if(op){
         for(i = 0; i < strlen(pr); i++)
             resp->buff[i] = pr[i];
+        resp->buff[i] = 0;
     }
     resp->op = op;
     resp->resp = 1;
