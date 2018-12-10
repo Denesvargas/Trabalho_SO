@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include"fila_serv.h"
 
+//Cria a fila
 Fila_serv* cria_fila_serv(){
     Fila_serv* fs = (Fila_serv*)malloc(sizeof(Fila_serv));
     fs->no = NULL;
@@ -10,11 +11,13 @@ Fila_serv* cria_fila_serv(){
     return fs;
 }
 
+//Obtem o ultimo no da fila
 No_serv* last_node(No_serv* no){
     if(no->prox == NULL) return no;
     return last_node(no->prox);
 }
 
+//Cria um novo no
 No_serv* cria_no_serv(Pacote_ped* ped){
     No_serv* new = (No_serv*)malloc(sizeof(No_serv));
     new->pedido = ped;
@@ -22,6 +25,7 @@ No_serv* cria_no_serv(Pacote_ped* ped){
     return new;
 }
 
+//Adiciona um no na fila
 void fila_serv_add(Fila_serv* fs, No_serv* no){
     if(fs == NULL) return;
     if(fs->no == NULL){
@@ -34,6 +38,7 @@ void fila_serv_add(Fila_serv* fs, No_serv* no){
     }
 }
 
+//Remove da fila pela ordenaçao FCFS
 No_serv* fila_serv_fifo(Fila_serv* fs){
     if(fs == NULL)
         return NULL;
@@ -44,19 +49,14 @@ No_serv* fila_serv_fifo(Fila_serv* fs){
     return New;
 }
 
+//Verifica se a fila ta vazia
 int fila_vazia(Fila_serv* fs){
     if(fs->no == NULL)
         return 1;
     return 0;
 }
 
-void printa_fila_s(No_serv* ss){
-    if(ss == NULL) return;
-    printf(" =%d=\n",ss->pedido->id_buf);
-    return printa_fila_s(ss->prox);
-}
-
-
+//Remove da fila pela ordenação do elevador
 No_serv* fila_serv_elev(Fila_serv* fs){
     if(fs == NULL)
         return NULL;

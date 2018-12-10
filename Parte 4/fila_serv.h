@@ -24,5 +24,3 @@ void fila_serv_add(Fila_serv* fs, No_serv* no);
 No_serv* fila_serv_fifo(Fila_serv* fs);
 
 No_serv* fila_serv_elev(Fila_serv* fs);
-
-void printa_fila_s(No_serv* ss);

@@ -25,18 +25,19 @@ long passed_time;
 int Ent_Setor[SET_TRILHA];
 FILE* fp;
 
+//Abre arquivo pra leitura
 void open(){
     fp = fopen(ARQUIVO,"r+");
 }
-
+//Abre arquivo pra escrita
 void open_write(){
     fp = fopen(ARQUIVO,"w");
 }
-
+//Fecha arquivo
 void close(){
     fclose(fp);
 }
-
+//Verifica se ja existe um setor de mesmo numero no vetor
 int isIn(int val){
     for(int i = 0; i< SET_TRILHA; i++){
       if(Ent_Setor[i] == val)
@@ -45,6 +46,7 @@ int isIn(int val){
     return 0;
 }
 
+//calcula o vetor de setores para o entrelacamento
 void calcula_set(int ent){
     int cursor = 0;
     for(int i = 0; i< SET_TRILHA; i++)
@@ -57,12 +59,9 @@ void calcula_set(int ent){
         cursor += ent;
         cursor = cursor % SET_TRILHA;
     }
-
-    for(int i = 0; i< SET_TRILHA; i++){
-    //printf(" %d : %d\n",i,Ent_Setor[i]);
-    }
 }
 
+//inicializa o disco
 void inicializa(int ent){
     open_write();
     fseek(fp, SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO, SEEK_SET);
@@ -76,26 +75,26 @@ void inicializa(int ent){
     calcula_set(ent);
 }
 
+//troca o setor logico pelo fisico
 void entrelacamento(int id[], int tipo, void* buff){
-    //printf("POS LOGICA: %d - POS REAL: %d\n",id[2],Ent_Setor[id[2]]);
 
     id[2] = Ent_Setor[id[2]];
     float ret = disco_Acesso(id,tipo,buff);
 }
 
+//funcao que faz uma pausa de tempo
 void mySleep(clock_t start, long time){
     while((clock() - start)* 1000 /CLOCKS_PER_SEC < time);
 }
 
+//acesso principal ao disco
 long disco_Acesso(int id[], int tipo, void* buff){
     clock_t start = clock();
     int pos = (id[0]*SET_TRILHA) + (id[1] * TRILHAS * SET_TRILHA) + id[2];
-    //printf("\nposicao: %d e dado: %s\n",pos*SETOR_SIZE,buff);
     if(tipo == LEITURA){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
         fread (buff, SETOR_SIZE, 1, fp);
-        printf("lido: %s\n", buff);
         close();
     }
     else{
@@ -112,12 +111,9 @@ long disco_Acesso(int id[], int tipo, void* buff){
     long timelapse = abs(id[0]-Disk_pos[0]) * TEMPO_TROCA_LINHA;
     timelapse += timelapse/10;
     Disk_pos[2] = (((clock()*1000 / CLOCKS_PER_SEC)-passed_time)%TEMPO_ROTACAO)/ TEMPO_TROCA_SET;
-    //printf("-- pa: %d  --  pf: %d --\n",Disk_pos[2],id[2]);
     int rotacao = id[2] - Disk_pos[2] < 0 ? (SET_TRILHA - abs(id[2] - Disk_pos[2])) : (id[2] - Disk_pos[2]);
-    //printf("id: %d   Disk: %d ",id[2],Disk_pos[2]);
     timelapse += (TEMPO_TROCA_SET * rotacao);
     timelapse += TEMPO_TRANSF;
-    //printf("time : %ld\n",timelapse);
 
     Disk_pos[0] = id[0];
 

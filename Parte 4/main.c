@@ -20,7 +20,6 @@ void* thread_serv(void *p);
 void* thread_clie(void *p);
 Pacote_ped* cria_pacote(int op);
 Pacote_resp* cria_pacote_resp(char *pr, int op);
-int world_counter = 0;
 
 int main(){
     Buffer *buf_serv = buffer_inicializa(TAM_BUFF_SERV), *buf_cli[N_CLIENTES];
@@ -44,7 +43,6 @@ int main(){
     pthread_create(&t_serv, NULL, thread_serv, &args_serv);
     for(i = 0; i < N_CLIENTES; i++){
         pthread_create(&(t_clie[i]), NULL, thread_clie, &(args_clie[i]));
-        //for(int j=0; j< 10000000; j++);
     }
     int r = pthread_join(t_serv, NULL);
     for(i = 0; i < N_CLIENTES; i++){
@@ -61,25 +59,24 @@ void* thread_serv(void *p){
     Buffer *buf_serv = p_arg->buf_serv;
     Buffer **buf_clie = p_arg->buf_clie;
     int siz = sizeof(Pacote_ped), tam = 0;
+    int world_counter = 0;
     while(1){
-        if(world_counter >= 3) break;
-        for(int zz = 0; zz< 1000000000; zz++);
+        if(world_counter >= N_CLIENTES){
+            break;}
         printf("\n\n\n#thread servidor espera pedido#\n\n\n\n");
 
         if(buffer_rem_verf(buf_serv))
             world_counter++;
+        else
+            world_counter = 0;
 
         while(!buffer_rem_verf(buf_serv)){
             void *p_aux = (void*) malloc(siz);
             buffer_remove(buf_serv, p_aux, siz, &tam);
             No_serv* ns = cria_no_serv((Pacote_ped*) p_aux);
-          //printf("+%d+\n",((Pacote_ped*) p_aux)->id_buf);
             fila_serv_add(fs,ns);
         }
 
-    //printf("Fila de pedidos:\n");
-    //printa_fila_s(fs->no);
-    //printf("Fim da Fila\n");
 
         while(!fila_vazia(fs)){
             Pacote_ped * pacte;
@@ -89,7 +86,6 @@ void* thread_serv(void *p){
                 pacte = (fila_serv_elev(fs))->pedido;
             printf("operacao %d do cliente %d, direcao %d.\n", pacte->op, pacte->id_buf, fs->direction);
             printf("setor %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
-            // coloca o pedido na fila @@IMPLEMENTAR@@
 
             // executa o pacote pedido chamando as funcoes do disco
             void* buff = malloc(512);
@@ -98,14 +94,15 @@ void* thread_serv(void *p){
             char* pr2 = (char*)buff2;
             //leitura
             if(pacte->op){
+                world_counter++;
                 entrelacamento(pacte->id_setor, pacte->op, buff2);
             }
             //escrita
             else{
+                world_counter++;
                 int j;
                 for(j = 0; j < TAMANHO_BLOCO; j++)
                 pr[j] = pacte->buff[j];
-                printf("aqui ->>>>>>>> %s\n", buff);
                 entrelacamento(pacte->id_setor, pacte->op, buff);
             }
 
@@ -157,9 +154,9 @@ void* thread_clie(void *p){
 Pacote_ped* cria_pacote(int buff){
     Pacote_ped *pacte = (Pacote_ped*) malloc(sizeof(Pacote_ped));
     int *p_set = (int*) malloc(sizeof(int)*3);
-    p_set[0] = rand()%2;
-    p_set[1] = rand()%2;
-    p_set[2] = rand()%2;
+    p_set[0] = 0;
+    p_set[1] = 0;
+    p_set[2] = (buff/3)%2;
     pacte->id_setor = p_set;
     pacte->id_buf = buff;
     pacte->op = buff % 2;
@@ -178,7 +175,6 @@ Pacote_resp* cria_pacote_resp(char *pr, int op){
     if(op){
         for(i = 0; i < strlen(pr); i++)
             resp->buff[i] = pr[i];
-        resp->buff[i] = 0;
     }
     resp->op = op;
     resp->resp = 1;
