@@ -90,12 +90,12 @@ void mySleep(clock_t start, long time){
 long disco_Acesso(int id[], int tipo, void* buff){
     clock_t start = clock();
     int pos = (id[0]*SET_TRILHA) + (id[1] * TRILHAS * SET_TRILHA) + id[2];
-    //printf("posicao: %d\n",pos);
+    //printf("\nposicao: %d e dado: %s\n",pos*SETOR_SIZE,buff);
     if(tipo == LEITURA){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
         fread (buff, SETOR_SIZE, 1, fp);
-        //printf("lido: %s\n", buff);
+        printf("lido: %s\n", buff);
         close();
     }
     else{
@@ -117,7 +117,7 @@ long disco_Acesso(int id[], int tipo, void* buff){
     //printf("id: %d   Disk: %d ",id[2],Disk_pos[2]);
     timelapse += (TEMPO_TROCA_SET * rotacao);
     timelapse += TEMPO_TRANSF;
-    printf("time : %ld\n",timelapse);
+    //printf("time : %ld\n",timelapse);
 
     Disk_pos[0] = id[0];
 
