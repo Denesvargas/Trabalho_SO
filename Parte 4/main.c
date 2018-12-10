@@ -17,7 +17,7 @@
 void* thread_serv(void *p);
 void* thread_clie(void *p);
 Pacote_ped* cria_pacote(int op);
-Pacote_resp* cria_pacote_resp(char *pr, int op);
+Pacote_resp* cria_pacote_resp(char *pr, int tam, int op);
 int world_counter = 0;
 
 int main(){
@@ -29,7 +29,6 @@ int main(){
     pthread_t t_serv, t_clie[N_CLIENTES];
     Thread_arg_serv args_serv;
     Thread_arg_clie args_clie[N_CLIENTES];
-
     inicializa(FAT_ENTRELACAMENTO);
     args_serv.buf_serv = buf_serv;
     args_serv.buf_clie = buf_cli;
@@ -38,11 +37,9 @@ int main(){
         args_clie[i].buf_serv = buf_serv;
         args_clie[i].num = i;
     }
-
     pthread_create(&t_serv, NULL, thread_serv, &args_serv);
     for(i = 0; i < N_CLIENTES; i++){
         pthread_create(&(t_clie[i]), NULL, thread_clie, &(args_clie[i]));
-        //for(int j=0; j< 10000000; j++);
     }
     int r = pthread_join(t_serv, NULL);
     for(i = 0; i < N_CLIENTES; i++){
@@ -58,7 +55,7 @@ void* thread_serv(void *p){
         // espera algum pacote_pedido chegar
         Buffer *buf_serv = p_arg->buf_serv;
         Buffer **buf_clie = p_arg->buf_clie;
-        int siz = sizeof(Pacote_ped), tam = 0;
+        int siz = sizeof(Pacote_ped), tam = 0, tampr = 0;
       while(1){
         if(world_counter >= 3) break;
         for(int zz = 0; zz< 1000000000; zz++);
@@ -88,8 +85,6 @@ void* thread_serv(void *p){
             pacte = (fila_serv_elev(fs))->pedido;
           printf("operacao %d do cliente %d, direcao %d.\n", pacte->op, pacte->id_buf, fs->direction);
           printf("setor %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
-          if(!pacte->op);
-              //printf("Escrito no disco: %s\n", pacte->buff);
             // coloca o pedido na fila @@IMPLEMENTAR@@
 
           // executa o pacote pedido chamando as funcoes do disco
@@ -100,6 +95,7 @@ void* thread_serv(void *p){
           //leitura
           if(pacte->op){
             entrelacamento(pacte->id_setor, pacte->op, buff2);
+            tampr = strlen(pr2);
           }
         //escrita
           else{
@@ -110,7 +106,7 @@ void* thread_serv(void *p){
           }
 
         // escreve no buffer da thread_cliente correspondente a resposta
-        Pacote_resp *pacte_r = cria_pacote_resp(pr2, pacte->op);
+        Pacote_resp *pacte_r = cria_pacote_resp(pr2, tampr, pacte->op);
         int taman = sizeof(Pacote_resp);
         void *p = (void*) pacte_r;
         int r = buffer_insere(buf_clie[pacte->id_buf], p, taman);
@@ -172,12 +168,13 @@ Pacote_ped* cria_pacote(int buff){
     return pacte;
 }
 
-Pacote_resp* cria_pacote_resp(char *pr, int op){
+Pacote_resp* cria_pacote_resp(char *pr, int tam, int op){
     int i;
     Pacote_resp *resp = (Pacote_resp*) malloc(sizeof(Pacote_resp));
     if(op){
-        for(i = 0; i < strlen(pr); i++)
+        for(i = 0; i < tam; i++)
             resp->buff[i] = pr[i];
+        resp->buff[tam] = 0;
     }
     resp->op = op;
     resp->resp = 1;
