@@ -78,8 +78,6 @@ void inicializa(int ent){
 }
 
 void entrelacamento(int id[], int tipo, void* buff){
-
-
     //printf("POS LOGICA: %d - POS REAL: %d\n",id[2],Ent_Setor[id[2]]);
 
     id[2] = Ent_Setor[id[2]];
@@ -98,7 +96,7 @@ long disco_Acesso(int id[], int tipo, void* buff){
         open();
         fseek (fp, pos*SETOR_SIZE, SEEK_SET);
         fread (buff, SETOR_SIZE, 1, fp);
-        printf("lido: %s\n", buff);
+        //printf("lido: %s\n", buff);
         close();
     }
     else{
@@ -107,7 +105,6 @@ long disco_Acesso(int id[], int tipo, void* buff){
         fread(dk,SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO, 1,fp);
         close();
         strcpy(&dk[pos*SETOR_SIZE],buff);
-        //printf(" -- %s\n\n",&dk[pos*SETOR_SIZE]);
         open_write();
         fwrite (dk, SETOR_SIZE * TRILHAS * SET_TRILHA * LIN_CILINDRO, 1, fp);
         close();

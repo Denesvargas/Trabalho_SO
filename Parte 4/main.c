@@ -4,9 +4,12 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
-#include "fila_thread.h"
+#include "fila_serv.h"
+#include "disco.h"
 
-#define N_CLIENTES 2
+#define ORDENACAO 1
+
+#define N_CLIENTES 40
 #define TAM_BUFF_SERV 10000
 #define TAM_BUFF_CLIE 2000
 #define FAT_ENTRELACAMENTO 1
@@ -15,6 +18,7 @@ void* thread_serv(void *p);
 void* thread_clie(void *p);
 Pacote_ped* cria_pacote(int op);
 Pacote_resp* cria_pacote_resp(char *pr, int op);
+int world_counter = 0;
 
 int main(){
     Buffer *buf_serv = buffer_inicializa(TAM_BUFF_SERV), *buf_cli[N_CLIENTES];
@@ -38,6 +42,7 @@ int main(){
     pthread_create(&t_serv, NULL, thread_serv, &args_serv);
     for(i = 0; i < N_CLIENTES; i++){
         pthread_create(&(t_clie[i]), NULL, thread_clie, &(args_clie[i]));
+        //for(int j=0; j< 10000000; j++);
     }
     int r = pthread_join(t_serv, NULL);
     for(i = 0; i < N_CLIENTES; i++){
@@ -47,48 +52,71 @@ int main(){
 }
 
 void* thread_serv(void *p){
-    int l = 0;
-    while(l < N_CLIENTES){
+    Fila_serv* fs = cria_fila_serv();
+
         Thread_arg_serv *p_arg = (Thread_arg_serv*) p;
         // espera algum pacote_pedido chegar
         Buffer *buf_serv = p_arg->buf_serv;
         Buffer **buf_clie = p_arg->buf_clie;
         int siz = sizeof(Pacote_ped), tam = 0;
-        void *p_aux = (void*) malloc(siz);
-        printf("\n#thread servidor espera pedido#\n\n");
+      while(1){
+        if(world_counter >= 3) break;
+        for(int zz = 0; zz< 1000000000; zz++);
+        printf("\n\n\n#thread servidor espera pedido#\n\n\n\n");
 
-        buffer_remove(buf_serv, p_aux, siz, &tam);
-        Pacote_ped *pacte = (Pacote_ped*) p_aux;
+        if(buffer_rem_verf(buf_serv))
+          world_counter++;
 
-        printf("operacao %d do cliente %d.\n", pacte->op, pacte->id_buf);
-        printf("setor %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
-        if(!pacte->op)
-            printf("Escrito no disco: %s\n", pacte->buff);
-        // coloca o pedido na fila @@IMPLEMENTAR@@
-
-        // executa o pacote pedido chamando as funcoes do disco
-        void* buff = malloc(512);
-        char* pr = (char*)buff;
-        //leitura
-        if(pacte->op){
-            entrelacamento(pacte->id_setor, pacte->op, buff);
+        while(!buffer_rem_verf(buf_serv)){
+          void *p_aux = (void*) malloc(siz);
+          buffer_remove(buf_serv, p_aux, siz, &tam);
+          No_serv* ns = cria_no_serv((Pacote_ped*) p_aux);
+          //printf("+%d+\n",((Pacote_ped*) p_aux)->id_buf);
+          fila_serv_add(fs,ns);
         }
+
+        //printf("Fila de pedidos:\n");
+        //printa_fila_s(fs->no);
+        //printf("Fim da Fila\n");
+
+        while(!fila_vazia(fs)){
+          Pacote_ped * pacte;
+
+          if(ORDENACAO)
+            pacte = (fila_serv_fifo(fs))->pedido;
+          else
+            pacte = (fila_serv_elev(fs))->pedido;
+          printf("operacao %d do cliente %d, direcao %d.\n", pacte->op, pacte->id_buf, fs->direction);
+          printf("setor %d %d %d\n", pacte->id_setor[0], pacte->id_setor[1], pacte->id_setor[2]);
+          if(!pacte->op);
+              printf("Escrito no disco: %s\n", pacte->buff);
+            // coloca o pedido na fila @@IMPLEMENTAR@@
+
+          // executa o pacote pedido chamando as funcoes do disco
+          void* buff = malloc(512);
+          char* pr = (char*)buff;
+          void* buff2 = malloc(512);
+          char* pr2 = (char*)buff2;
+          //leitura
+          if(pacte->op){
+            entrelacamento(pacte->id_setor, pacte->op, buff2);
+          }
         //escrita
-        else{
+          else{
             int j;
             for(j = 0; j < strlen(pacte->buff); j++)
                 pr[j] = pacte->buff[j];
             entrelacamento(pacte->id_setor, pacte->op, buff);
-        }
+          }
 
         // escreve no buffer da thread_cliente correspondente a resposta
-        Pacote_resp *pacte_r = cria_pacote_resp(pr, pacte->op);
+        Pacote_resp *pacte_r = cria_pacote_resp(pr2, pacte->op);
         int taman = sizeof(Pacote_resp);
         void *p = (void*) pacte_r;
         int r = buffer_insere(buf_clie[pacte->id_buf], p, taman);
         if(!r)
             printf("erro na insercao do serv->clie");
-        l++;
+      }
     }
     return 0;
 }
@@ -129,14 +157,14 @@ void* thread_clie(void *p){
 Pacote_ped* cria_pacote(int buff){
     Pacote_ped *pacte = (Pacote_ped*) malloc(sizeof(Pacote_ped));
     int *p_set = (int*) malloc(sizeof(int)*3);
-    p_set[0] = 0;
-    p_set[1] = 0;
-    p_set[2] = 1;
+    p_set[0] = rand()%40;
+    p_set[1] = rand()%2;
+    p_set[2] = rand()%9;
     pacte->id_setor = p_set;
     pacte->id_buf = buff;
     pacte->op = buff % 2;
     if(!(buff % 2)){
-        char *temp = "isso eh o que foi colocado\n";
+        char *temp = "isso eh o que foi colocado.";
         int i;
         for(i = 0; i < strlen(temp); i++)
             pacte->buff[i] = temp[i];
